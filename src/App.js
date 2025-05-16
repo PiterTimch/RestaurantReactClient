@@ -4,21 +4,22 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import CategoriesPage from "./pages/categories";
 import CategoriesCreateForm from "./pages/categories/create";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainNavBar from "./components/navigation/mainNavBar";
 
 const App = () => {
 
 
     return (
-        <>
-            <div className={"row gap-3 justify-content-center"}>
-                <div className={"col col-5"}>
-                    <CategoriesPage/>
-                </div>
-                <div className={"col col-5"}>
-                    <CategoriesCreateForm/>
-                </div>
+        <Router>
+            <MainNavBar />
+            <div className="container mt-4">
+                <Routes>
+                    <Route path="/" element={<CategoriesPage />} />
+                    <Route path="/categoryCreate" element={<CategoriesCreateForm />} />
+                </Routes>
             </div>
-        </>
+        </Router>
     );
 }
 
