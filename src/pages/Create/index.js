@@ -1,5 +1,7 @@
 import { useState } from "react";
 import axiosInstance from "../../api/axiosInstance";
+import BaseTextInput from "../../components/common/BaseTextInput";
+import BaseFileInput from "../../components/common/BaseFileInput";
 
 const CategoriesCreateForm = () => {
     const [formData, setFormData] = useState({
@@ -89,50 +91,34 @@ const CategoriesCreateForm = () => {
             )}
 
             <form onSubmit={handleSubmit} className="mx-auto" style={{ maxWidth: 400 }}>
-                <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                        Назва
-                    </label>
-                    <input
-                        type="text"
-                        className={`form-control ${error && !formData.name.trim() ? "is-invalid" : ""}`}
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        disabled={isSubmitting}
-                    />
-                </div>
+                <BaseTextInput
+                    id="name"
+                    name="name"
+                    label="Назва"
+                    value={formData.name}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    error={error && !formData.name.trim() ? error : ""}
+                />
 
-                <div className="mb-3">
-                    <label htmlFor="slug" className="form-label">
-                        Slug
-                    </label>
-                    <input
-                        type="text"
-                        className={`form-control ${error && !formData.slug.trim() ? "is-invalid" : ""}`}
-                        id="slug"
-                        name="slug"
-                        value={formData.slug}
-                        onChange={handleChange}
-                        disabled={isSubmitting}
-                    />
-                </div>
+                <BaseTextInput
+                    id="slug"
+                    name="slug"
+                    label="Slug"
+                    value={formData.slug}
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    error={error && !formData.slug.trim() ? error : ""}
+                />
 
-                <div className="mb-4">
-                    <label htmlFor="image" className="form-label">
-                        Зображення
-                    </label>
-                    <input
-                        type="file"
-                        className={`form-control ${error && !formData.image ? "is-invalid" : ""}`}
-                        id="image"
-                        name="image"
-                        accept="image/*"
-                        onChange={handleChange}
-                        disabled={isSubmitting}
-                    />
-                </div>
+                <BaseFileInput
+                    id="image"
+                    name="image"
+                    label="Зображення"
+                    onChange={handleChange}
+                    disabled={isSubmitting}
+                    error={error && !formData.image ? error : ""}
+                />
 
                 <button
                     type="submit"
