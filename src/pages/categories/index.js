@@ -1,12 +1,13 @@
 import {useEffect, useState} from "react";
-import axios from "axios";
+import {BASE_URL} from "../../api/apiConfig";
+import axiosInstance from "../../api/axiosInstance";
 
 
 const CategoriesPage = () => {
     const [list, setList] = useState([])
 
     useEffect(() => {
-        axios.get("http://localhost:5116/api/Categories/list")
+        axiosInstance.get("/api/Categories/list")
             .then(res => {
                 const {data} = res;
                 console.log(data);
@@ -34,7 +35,7 @@ const CategoriesPage = () => {
                             <tr key={item}>
                                 <td>{item.id}</td>
                                 <td>{item.name}</td>
-                                <td><img src={"http://localhost:5116/images/200_" + item.image} alt={item.name}
+                                <td><img src={BASE_URL + "/images/200_" + item.image} alt={item.name}
                                          width={75}/></td>
                             </tr>
                         ))

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../../api/axiosInstance";
 
 const CategoriesCreateForm = () => {
     const [formData, setFormData] = useState({
@@ -21,10 +21,7 @@ const CategoriesCreateForm = () => {
             setError("Slug не може бути порожнім");
             return false;
         }
-        if (!formData.image) {
-            setError("Будь ласка, додайте зображення");
-            return false;
-        }
+
         setError("");
         return true;
     };
@@ -43,8 +40,8 @@ const CategoriesCreateForm = () => {
         data.append("slug", formData.slug);
         data.append("imageFile", formData.image);
 
-        axios
-            .post("http://localhost:5116/api/Categories/create", data, {
+        axiosInstance
+            .post("/api/Categories/create", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -104,7 +101,6 @@ const CategoriesCreateForm = () => {
                         value={formData.name}
                         onChange={handleChange}
                         disabled={isSubmitting}
-                        required
                     />
                 </div>
 
@@ -120,7 +116,6 @@ const CategoriesCreateForm = () => {
                         value={formData.slug}
                         onChange={handleChange}
                         disabled={isSubmitting}
-                        required
                     />
                 </div>
 
@@ -136,7 +131,6 @@ const CategoriesCreateForm = () => {
                         accept="image/*"
                         onChange={handleChange}
                         disabled={isSubmitting}
-                        required
                     />
                 </div>
 
