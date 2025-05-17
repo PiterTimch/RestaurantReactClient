@@ -1,25 +1,28 @@
-import logo from './logo.svg';
 import './App.css';
-import {useEffect, useState} from "react";
-import axios from "axios";
 import CategoriesPage from "./pages/categories";
-import CategoriesCreateForm from "./pages/categories/create";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import MainNavBar from "./components/navigation/mainNavBar";
+import {Route, Routes} from "react-router-dom";
+import Layout from "./components/Layout";
+import NoMatch from "./pages/NoMatch";
+import CategoriesCreateForm from "./pages/Create";
+import Home from "./pages/Home";
 
 const App = () => {
 
-
     return (
-        <Router>
-            <MainNavBar />
-            <div className="container mt-4">
-                <Routes>
-                    <Route path="/" element={<CategoriesPage />} />
-                    <Route path="/categoryCreate" element={<CategoriesCreateForm />} />
-                </Routes>
-            </div>
-        </Router>
+        <>
+            <Routes>
+                <Route path="/" element={<Layout />}>
+                    <Route index element={<Home />}/>
+
+                    <Route path="categories">
+                        <Route path="list" element={<CategoriesPage />} />
+                        <Route path="create" element={<CategoriesCreateForm />} />
+                    </Route>
+
+                    <Route path="*" element={<NoMatch />} />
+                </Route>
+            </Routes>
+        </>
     );
 }
 
