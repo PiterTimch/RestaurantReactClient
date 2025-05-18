@@ -3,8 +3,9 @@ import CategoriesPage from "./pages/categories";
 import {Route, Routes} from "react-router-dom";
 import Layout from "./components/Layout";
 import NoMatch from "./pages/NoMatch";
-import CategoriesCreateForm from "./pages/Create";
+import CategoriesCreateForm from "./pages/categories/Create";
 import Home from "./pages/Home";
+import CategoriesUpdateForm from "./pages/categories/Update";
 
 const App = () => {
 
@@ -15,8 +16,9 @@ const App = () => {
                     <Route index element={<Home />}/>
 
                     <Route path="categories">
-                        <Route path="list" element={<CategoriesPage />} />
+                        <Route index element={<CategoriesPage />} />
                         <Route path="create" element={<CategoriesCreateForm />} />
+                        <Route path="update/:id" element={<CategoriesUpdateForm />} />
                     </Route>
 
                     <Route path="*" element={<NoMatch />} />

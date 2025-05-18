@@ -1,7 +1,7 @@
 import { useState } from "react";
-import axiosInstance from "../../api/axiosInstance";
-import BaseTextInput from "../../components/common/BaseTextInput";
-import BaseFileInput from "../../components/common/BaseFileInput";
+import axiosInstance from "../../../api/axiosInstance";
+import BaseTextInput from "../../../components/common/BaseTextInput";
+import BaseFileInput from "../../../components/common/BaseFileInput";
 
 const CategoriesCreateForm = () => {
     const [formData, setFormData] = useState({
