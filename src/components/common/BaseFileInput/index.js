@@ -1,23 +1,29 @@
 const BaseFileInput = ({
-                           id,
-                           name,
+                           field,
+                           form: { touched, errors, setFieldValue },
                            label,
-                           onChange,
-                           disabled = false,
-                           error = ""
+                           disabled = false
                        }) => {
+    const { name } = field;
+    const error = touched[name] && errors[name];
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setFieldValue(name, file);
+    };
+
     return (
         <div className="mb-4">
-            <label htmlFor={id} className="form-label">
+            <label htmlFor={name} className="form-label">
                 {label}
             </label>
             <input
                 type="file"
                 className={`form-control ${error ? "is-invalid" : ""}`}
-                id={id}
+                id={name}
                 name={name}
                 accept="image/*"
-                onChange={onChange}
+                onChange={handleFileChange}
                 disabled={disabled}
             />
             {error && <div className="invalid-feedback">{error}</div>}

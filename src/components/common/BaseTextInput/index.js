@@ -1,27 +1,25 @@
 const BaseTextInput = ({
-                           id,
-                           name,
+                           field,
+                           form,
                            label,
-                           value,
-                           onChange,
-                           disabled = false,
                            placeholder = "",
-                           error = ""
+                           disabled = false
                        }) => {
+    const {name} = field;
+    const {touched, errors} = form;
+    const error = touched[name] && errors[name];
+
     return (
         <div className="mb-3">
-            <label htmlFor={id} className="form-label">
+            <label htmlFor={name} className="form-label">
                 {label}
             </label>
             <input
-                type="text"
+                {...field}
+                id={name}
                 className={`form-control ${error ? "is-invalid" : ""}`}
-                id={id}
-                name={name}
-                value={value}
-                onChange={onChange}
-                disabled={disabled}
                 placeholder={placeholder}
+                disabled={disabled}
             />
             {error && <div className="invalid-feedback">{error}</div>}
         </div>
