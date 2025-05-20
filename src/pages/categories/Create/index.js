@@ -1,7 +1,7 @@
 import axiosInstance from "../../../api/axiosInstance";
 import BaseTextInput from "../../../components/common/BaseTextInput";
 import BaseFileInput from "../../../components/common/BaseFileInput";
-import { Formik, Form, Field } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
@@ -16,42 +16,54 @@ const CategoriesCreateForm = () => {
     const [success, setSuccess] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const initialValues = {
-        name: "",
-        slug: "",
-        image: null
-    };
+    const formik = useFormik({
+        initialValues: {
+            name: "",
+            slug: "",
+            image: null
+        },
+        validationSchema,
+        onSubmit: (values, { setSubmitting, resetForm, setErrors }) => {
+            setIsSubmitting(true);
+            setSuccess("");
 
-    const handleSubmit = (values, { setSubmitting, resetForm, setErrors }) => {
-        setIsSubmitting(true);
-        setSuccess("");
+            const data = new FormData();
+            data.append("name", values.name);
+            data.append("slug", values.slug);
+            data.append("imageFile", values.image);
 
-        const data = new FormData();
-        data.append("name", values.name);
-        data.append("slug", values.slug);
-        data.append("imageFile", values.image);
-
-        axiosInstance
-            .post("/api/Categories/create", data, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            })
-            .then(() => {
-                setSuccess("Категорію успішно створено!");
-                resetForm();
-            })
-            .catch((err) => {
-                console.error(err);
-                setErrors({
-                    image: err.response?.data?.message || "Сталася помилка при створенні категорії",
+            axiosInstance
+                .post("/api/Categories/create", data, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                })
+                .then(() => {
+                    setSuccess("Категорію успішно створено!");
+                    resetForm();
+                })
+                .catch((err) => {
+                    console.error(err);
+                    setErrors({
+                        image: err.response?.data?.message || "Сталася помилка при створенні категорії",
+                    });
+                })
+                .finally(() => {
+                    setSubmitting(false);
+                    setIsSubmitting(false);
                 });
-            })
-            .finally(() => {
-                setSubmitting(false);
-                setIsSubmitting(false);
-            });
-    };
+        }
+    });
+
+    const {
+        handleSubmit,
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        setFieldValue,
+    } = formik;
 
     return (
         <>
@@ -63,44 +75,48 @@ const CategoriesCreateForm = () => {
                 </div>
             )}
 
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-            >
-                {({ setFieldValue }) => (
-                    <Form className="mx-auto" style={{ maxWidth: 400 }}>
-                        <Field
-                            name="name"
-                            label="Назва"
-                            component={BaseTextInput}
-                        />
+            <form onSubmit={handleSubmit} className="mx-auto" style={{ maxWidth: 400 }}>
+                <BaseTextInput
+                    field={{
+                        name: "name",
+                        value: values.name,
+                        onChange: handleChange,
+                        onBlur: handleBlur,
+                    }}
+                    form={{ touched, errors }}
+                    label="Назва"
+                />
 
-                        <Field
-                            name="slug"
-                            label="Slug"
-                            component={BaseTextInput}
-                        />
+                <BaseTextInput
+                    field={{
+                        name: "slug",
+                        value: values.slug,
+                        onChange: handleChange,
+                        onBlur: handleBlur,
+                    }}
+                    form={{ touched, errors }}
+                    label="Slug"
+                />
 
-                        <Field
-                            name="image"
-                            label="Зображення"
-                            component={BaseFileInput}
-                            setFieldValue={setFieldValue}
-                        />
+                <BaseFileInput
+                    field={{
+                        name: "image",
+                        value: values.image
+                    }}
+                    form={{ touched, errors, setFieldValue }}
+                    label="Зображення"
+                />
 
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? "Створення..." : "Створити"}
-                        </button>
+                <button
+                    type="submit"
+                    className="btn btn-primary w-100"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? "Створення..." : "Створити"}
+                </button>
 
-                        {isSubmitting && <LoadingOverlay />}
-                    </Form>
-                )}
-            </Formik>
+                {isSubmitting && <LoadingOverlay />}
+            </form>
         </>
     );
 };

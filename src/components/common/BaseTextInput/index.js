@@ -1,3 +1,5 @@
+import classNames from "classnames";
+
 const BaseTextInput = ({
                            field,
                            form,
@@ -17,7 +19,9 @@ const BaseTextInput = ({
             <input
                 {...field}
                 id={name}
-                className={`form-control ${error ? "is-invalid" : ""}`}
+                className={classNames("form-control", {
+                    "is-invalid": error && touched[name]
+                })}
                 placeholder={placeholder}
                 disabled={disabled}
             />

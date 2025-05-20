@@ -1,3 +1,5 @@
+import classNames from "classnames";
+
 const BaseFileInput = ({
                            field,
                            form: { touched, errors, setFieldValue },
@@ -19,7 +21,9 @@ const BaseFileInput = ({
             </label>
             <input
                 type="file"
-                className={`form-control ${error ? "is-invalid" : ""}`}
+                className={classNames("form-control", {
+                    "is-invalid": error && touched[name]
+                })}
                 id={name}
                 name={name}
                 accept="image/*"
