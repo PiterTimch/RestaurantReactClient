@@ -4,6 +4,7 @@ import BaseFileInput from "../../../components/common/BaseFileInput";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useState } from "react";
+import LoadingOverlay from "../../../components/common/LoadingOverlay";
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().required("Назва не може бути порожньою"),
@@ -95,6 +96,8 @@ const CategoriesCreateForm = () => {
                         >
                             {isSubmitting ? "Створення..." : "Створити"}
                         </button>
+
+                        {isSubmitting && <LoadingOverlay />}
                     </Form>
                 )}
             </Formik>

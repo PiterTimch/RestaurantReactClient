@@ -1,10 +1,11 @@
-import { useEffect } from "react";
+import {useEffect, useState} from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import BaseTextInput from "../../../components/common/BaseTextInput";
 import BaseFileInput from "../../../components/common/BaseFileInput";
 import { useNavigate, useParams } from "react-router-dom";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
+import LoadingOverlay from "../../../components/common/LoadingOverlay";
 
 // Валідація
 const validationSchema = Yup.object().shape({
@@ -14,31 +15,37 @@ const validationSchema = Yup.object().shape({
 });
 
 const CategoriesUpdateForm = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const navigate = useNavigate();
 
-    const initialValues = {
+    const [initialValues, setInitialValues] = useState({
+        id: "",
         name: "",
         slug: "",
         image: null,
-    };
+    });
 
-    const fetchCategory = async (setValues) => {
-        try {
-            const res = await axiosInstance.get(`/api/Categories/${id}`);
-            setValues({
-                name: res.data.name,
-                slug: res.data.slug,
-                image: null,
-            });
-        } catch (err) {
-            console.log(err);
-        }
-    };
+    useEffect(() => {
+        const fetchCategory = async () => {
+            try {
+                const res = await axiosInstance.get(`/api/Categories/${slug}`);
+                setInitialValues({
+                    id: res.data.id,
+                    name: res.data.name,
+                    slug: res.data.slug,
+                    image: null,
+                });
+            } catch (err) {
+                console.log(err);
+            }
+        };
+
+        fetchCategory();
+    }, [slug]);
 
     const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
         const data = new FormData();
-        data.append("id", id);
+        data.append("id", values.id);
         data.append("name", values.name);
         data.append("slug", values.slug);
         if (values.image) {
@@ -54,7 +61,7 @@ const CategoriesUpdateForm = () => {
             navigate("..");
         } catch (err) {
             console.error(err);
-            setFieldError("general", "Сталася помилка при редагуванні категорії");
+            setFieldError("general", `Сталася помилка при редагуванні категорії:\n${err.response?.data}`);
         } finally {
             setSubmitting(false);
         }
@@ -109,6 +116,8 @@ const CategoriesUpdateForm = () => {
                         >
                             {isSubmitting ? "Зміна..." : "Змінити"}
                         </button>
+
+                        {isSubmitting && <LoadingOverlay />}
                     </Form>
                 )}
             </Formik>

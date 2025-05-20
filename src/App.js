@@ -18,7 +18,7 @@ const App = () => {
                     <Route path="categories">
                         <Route index element={<CategoriesPage />} />
                         <Route path="create" element={<CategoriesCreateForm />} />
-                        <Route path="update/:id" element={<CategoriesUpdateForm />} />
+                        <Route path="update/:slug" element={<CategoriesUpdateForm />} />
                     </Route>
 
                     <Route path="*" element={<NoMatch />} />
