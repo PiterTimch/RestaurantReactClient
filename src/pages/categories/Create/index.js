@@ -45,20 +45,21 @@ const CategoriesCreateForm = () => {
                 .catch((err) => {
                     console.error(err);
 
-                    if (err.response && Array.isArray(err.response.data)) {
-                        const formErrors = {};
+                    const errorResponse = err.response?.data;
 
-                        err.response.data.forEach(({ field, error }) => {
+                    if (errorResponse && typeof errorResponse.errors === 'object') {
+                        const formErrors = Object.entries(errorResponse.errors).reduce((acc, [field, messages]) => {
                             const key = field.charAt(0).toLowerCase() + field.slice(1);
-                            formErrors[key] = error;
-                        });
+                            acc[key] = Array.isArray(messages) ? messages.join(' ') : messages;
+                            return acc;
+                        }, {});
 
                         setErrors(formErrors);
                     } else {
-                        setErrors({ _error: err.response?.data || "Сталася помилка при створенні категорії" });
+                        setErrors({ _error: errorResponse || "Сталася помилка при створенні категорії" });
                     }
                 })
-                .finally(() => {
+        .finally(() => {
                     setSubmitting(false);
                     setIsSubmitting(false);
                 });
