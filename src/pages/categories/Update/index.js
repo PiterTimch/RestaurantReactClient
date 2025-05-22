@@ -53,7 +53,7 @@ const CategoriesUpdateForm = () => {
         }
 
         try {
-            await axiosInstance.post("/api/Categories/update", data, {
+            await axiosInstance.put("/api/Categories/update", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
