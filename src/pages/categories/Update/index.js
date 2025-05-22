@@ -61,7 +61,15 @@ const CategoriesUpdateForm = () => {
             navigate("..");
         } catch (err) {
             console.error(err);
-            setFieldError("general", `Сталася помилка при редагуванні категорії:\n${err.response?.data}`);
+
+            if (err.response && Array.isArray(err.response.data)) {
+                err.response.data.forEach(({ field, error }) => {
+                    const key = field.charAt(0).toLowerCase() + field.slice(1);
+                    setFieldError(key, error);
+                });
+            } else {
+                setFieldError("general", err.response?.data || "Сталася помилка при редагуванні категорії");
+            }
         } finally {
             setSubmitting(false);
         }

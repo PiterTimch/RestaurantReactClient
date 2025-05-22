@@ -44,9 +44,19 @@ const CategoriesCreateForm = () => {
                 })
                 .catch((err) => {
                     console.error(err);
-                    setErrors({
-                        image: err.response?.data?.message || "Сталася помилка при створенні категорії",
-                    });
+
+                    if (err.response && Array.isArray(err.response.data)) {
+                        const formErrors = {};
+
+                        err.response.data.forEach(({ field, error }) => {
+                            const key = field.charAt(0).toLowerCase() + field.slice(1);
+                            formErrors[key] = error;
+                        });
+
+                        setErrors(formErrors);
+                    } else {
+                        setErrors({ _error: err.response?.data || "Сталася помилка при створенні категорії" });
+                    }
                 })
                 .finally(() => {
                     setSubmitting(false);
