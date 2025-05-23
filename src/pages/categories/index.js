@@ -26,7 +26,9 @@ const CategoriesPage = () => {
     const handleConfirmDelete = async () => {
         setIsDeleting(true);
         try {
-            await axiosInstance.delete(`/api/Categories/delete/${selectedId}`);
+            await axiosInstance.delete(`/api/Categories/delete`, {
+                data: { id: selectedId }
+            });
             setList((prev) => prev.filter((item) => item.id !== selectedId));
         } catch (err) {
             console.error("Помилка при видаленні", err);
