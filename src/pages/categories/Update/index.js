@@ -1,141 +1,134 @@
-import {useEffect, useState} from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import BaseTextInput from "../../../components/common/BaseTextInput";
 import BaseFileInput from "../../../components/common/BaseFileInput";
-import { useNavigate, useParams } from "react-router-dom";
-import { Formik, Form, Field } from "formik";
+import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
+import {mapServerErrorsToFormik} from "../../../helpers/formikErrorHelper";
 
-// Валідація
 const validationSchema = Yup.object().shape({
     name: Yup.string().required("Назва не може бути порожньою"),
     slug: Yup.string().required("Slug не може бути порожнім"),
-    image: Yup.mixed().nullable()
+    imageFile: Yup.mixed().nullable(),
 });
 
 const CategoriesUpdateForm = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
 
-    const [initialValues, setInitialValues] = useState({
-        id: "",
-        name: "",
-        slug: "",
-        image: null,
+    const formik = useFormik({
+        initialValues: {
+            id: "",
+            name: "",
+            slug: "",
+            imageFile: null,
+        },
+        enableReinitialize: true,
+        validationSchema,
+        onSubmit: async (values) => {
+            setIsLoading(true);
+            const data = new FormData();
+            data.append("id", values.id);
+            data.append("name", values.name);
+            data.append("slug", values.slug);
+            if (values.imageFile) {
+                data.append("imageFile", values.imageFile);
+            }
+
+            try {
+                await axiosInstance.put("/api/Categories/update", data, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                });
+                navigate("..");
+            } catch (err) {
+                console.error("Send request error", err);
+
+                mapServerErrorsToFormik(err, setErrors);
+
+                setIsLoading(false);
+            }
+        },
     });
+
+    const { values, handleSubmit, errors, touched, handleChange, setFieldValue, setValues, setErrors } = formik;
 
     useEffect(() => {
         const fetchCategory = async () => {
             try {
                 const res = await axiosInstance.get(`/api/Categories/${slug}`);
-                setInitialValues({
+                setValues({
                     id: res.data.id,
                     name: res.data.name,
                     slug: res.data.slug,
-                    image: null,
+                    imageFile: null,
                 });
             } catch (err) {
                 console.log(err);
+            } finally {
+                setIsLoading(false);
             }
         };
-
         fetchCategory();
     }, [slug]);
 
-    const handleSubmit = async (values, { setSubmitting, setFieldError }) => {
-        const data = new FormData();
-        data.append("id", values.id);
-        data.append("name", values.name);
-        data.append("slug", values.slug);
-        if (values.image) {
-            data.append("imageFile", values.image);
-        }
-
-        try {
-            await axiosInstance.put("/api/Categories/update", data, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                },
-            });
-            navigate("..");
-        } catch (err) {
-            console.error(err);
-
-            const errorResponse = err.response?.data;
-
-            if (errorResponse && typeof errorResponse.errors === 'object') {
-                Object.entries(errorResponse.errors).forEach(([field, messages]) => {
-                    const key = field.charAt(0).toLowerCase() + field.slice(1);
-
-                    if (Array.isArray(messages)) {
-                        setFieldError(key, messages[0]); // або всі, якщо хочеш
-                    } else {
-                        setFieldError(key, messages);
-                    }
-                });
-            } else {
-                setFieldError("general", errorResponse || "Сталася помилка при редагуванні категорії");
-            }
-        } finally {
-            setSubmitting(false);
-        }
+    const onHandleFileChange = (e) => {
+        const files = e.target.files;
+        setFieldValue("imageFile", files.length > 0 ? files[0] : null);
     };
 
     return (
         <>
-            <h2 className="text-center mb-4">Редагувати категорію</h2>
+            {errors.general && (
+                <div className="alert alert-danger" role="alert">
+                    {errors.general}
+                </div>
+            )}
 
-            <Formik
-                initialValues={initialValues}
-                validationSchema={validationSchema}
-                onSubmit={handleSubmit}
-                enableReinitialize
-            >
-                {({ setFieldValue, isSubmitting, errors }) => (
-                    <Form className="mx-auto" style={{ maxWidth: 400 }}>
-                        {errors.general && (
-                            <div className="alert alert-danger" role="alert">
-                                {errors.general}
-                            </div>
-                        )}
-
-                        <Field
-                            name="name"
-                            label="Назва"
-                            placeholder="Введіть назву"
-                            component={BaseTextInput}
-                            disabled={isSubmitting}
-                        />
-
-                        <Field
-                            name="slug"
-                            label="Slug"
-                            placeholder="Введіть slug"
-                            component={BaseTextInput}
-                            disabled={isSubmitting}
-                        />
-
-                        <Field
-                            name="image"
-                            label="Зображення"
-                            component={BaseFileInput}
-                            disabled={isSubmitting}
-                            setFieldValue={setFieldValue}
-                        />
-
-                        <button
-                            type="submit"
-                            className="btn btn-primary w-100"
-                            disabled={isSubmitting}
-                        >
-                            {isSubmitting ? "Зміна..." : "Змінити"}
-                        </button>
-
-                        {isSubmitting && <LoadingOverlay />}
-                    </Form>
+            <h1 className="text-center">Редагувати категорію</h1>
+            <form onSubmit={handleSubmit} className="col-md-6 offset-md-3">
+                {errors.general && (
+                    <div className="alert alert-danger" role="alert">
+                        {errors.general}
+                    </div>
                 )}
-            </Formik>
+
+                <BaseTextInput
+                    label="Назва"
+                    field="name"
+                    error={errors.name}
+                    touched={touched.name}
+                    value={values.name}
+                    onChange={handleChange}
+                />
+
+                <BaseTextInput
+                    label="Slug"
+                    field="slug"
+                    error={errors.slug}
+                    touched={touched.slug}
+                    value={values.slug}
+                    onChange={handleChange}
+                />
+
+                <BaseFileInput
+                    label="Оберіть зображення"
+                    field="imageFile"
+                    error={errors.imageFile}
+                    touched={touched.imageFile}
+                    onChange={onHandleFileChange}
+                />
+
+                <button type="submit" className="btn btn-primary w-100" disabled={isLoading}>
+                    Змінити
+                </button>
+            </form>
+
+            {isLoading && <LoadingOverlay />}
         </>
     );
 };

@@ -3,8 +3,11 @@ import BaseTextInput from "../../../components/common/BaseTextInput";
 import BaseFileInput from "../../../components/common/BaseFileInput";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useState } from "react";
+import {useNavigate} from "react-router-dom";
+import {BASE_URL} from "../../../api/apiConfig";
+import {useState} from "react";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
+import {mapServerErrorsToFormik} from "../../../helpers/formikErrorHelper";
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().required("Назва не може бути порожньою"),
@@ -13,120 +16,95 @@ const validationSchema = Yup.object().shape({
 });
 
 const CategoriesCreateForm = () => {
-    const [success, setSuccess] = useState("");
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const initValues = {
+        name: "",
+        slug: "",
+        imageFile: null,
+    };
+
+    const handleFormikSubmit = async (values) => {
+        setIsLoading(true);
+        console.log("Submit formik", values);
+        try {
+            var result = await axiosInstance.post(`${BASE_URL}/api/Categories/create`, values,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    }
+                });
+            console.log("Server result", result);
+            navigate("..");
+
+        } catch(err) {
+            console.error("Send request error", err);
+
+            mapServerErrorsToFormik(err, setErrors);
+
+            setIsLoading(false);
+        }
+    }
 
     const formik = useFormik({
-        initialValues: {
-            name: "",
-            slug: "",
-            image: null
-        },
-        validationSchema,
-        onSubmit: (values, { setSubmitting, resetForm, setErrors }) => {
-            setIsSubmitting(true);
-            setSuccess("");
-
-            const data = new FormData();
-            data.append("name", values.name);
-            data.append("slug", values.slug);
-            data.append("imageFile", values.image);
-
-            axiosInstance
-                .post("/api/Categories/create", data, {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                })
-                .then(() => {
-                    setSuccess("Категорію успішно створено!");
-                    resetForm();
-                })
-                .catch((err) => {
-                    console.error(err);
-
-                    const errorResponse = err.response?.data;
-
-                    if (errorResponse && typeof errorResponse.errors === 'object') {
-                        const formErrors = Object.entries(errorResponse.errors).reduce((acc, [field, messages]) => {
-                            const key = field.charAt(0).toLowerCase() + field.slice(1);
-                            acc[key] = Array.isArray(messages) ? messages.join(' ') : messages;
-                            return acc;
-                        }, {});
-
-                        setErrors(formErrors);
-                    } else {
-                        setErrors({ _error: errorResponse || "Сталася помилка при створенні категорії" });
-                    }
-                })
-        .finally(() => {
-                    setSubmitting(false);
-                    setIsSubmitting(false);
-                });
-        }
+        initialValues: initValues,
+        onSubmit: handleFormikSubmit,
+        validationSchema: validationSchema,
     });
 
-    const {
-        handleSubmit,
-        values,
-        errors,
-        touched,
-        handleChange,
-        handleBlur,
-        setFieldValue,
-    } = formik;
+    const {values, handleSubmit, errors, touched, setErrors, handleChange, setFieldValue} = formik;
+
+    const navigate = useNavigate();
+
+    const onHandleFileChange = (e) => {
+        const files = e.target.files;
+        if (files.length > 0) {
+            setFieldValue("imageFile", files[0]);
+        }
+        else {
+            setFieldValue("imageFile", null);
+        }
+    }
 
     return (
         <>
-            <h2 className="text-center mb-4">Створити категорію</h2>
-
-            {success && (
-                <div className="alert alert-success" role="alert">
-                    {success}
+            {errors.general && (
+                <div className="alert alert-danger" role="alert">
+                    {errors.general}
                 </div>
             )}
 
-            <form onSubmit={handleSubmit} className="mx-auto" style={{ maxWidth: 400 }}>
+            <h1 className={"text-center"}>Додати категорію</h1>
+            <form onSubmit={handleSubmit} className={"col-md-6 offset-md-3"}>
                 <BaseTextInput
-                    field={{
-                        name: "name",
-                        value: values.name,
-                        onChange: handleChange,
-                        onBlur: handleBlur,
-                    }}
-                    form={{ touched, errors }}
-                    label="Назва"
+                    label={"Назва"}
+                    field={"name"}
+                    error={errors.name}
+                    touched={touched.name}
+                    value={values.name}
+                    onChange={handleChange}
                 />
 
                 <BaseTextInput
-                    field={{
-                        name: "slug",
-                        value: values.slug,
-                        onChange: handleChange,
-                        onBlur: handleBlur,
-                    }}
-                    form={{ touched, errors }}
-                    label="Slug"
+                    label={"Url-Slug"}
+                    field={"slug"}
+                    error={errors.slug}
+                    touched={touched.slug}
+                    value={values.slug}
+                    onChange={handleChange}
                 />
 
                 <BaseFileInput
-                    field={{
-                        name: "image",
-                        value: values.image
-                    }}
-                    form={{ touched, errors, setFieldValue }}
-                    label="Зображення"
+                    label={"Оберіть фото"}
+                    field={"imageFile"}
+                    error={errors.imageFile}
+                    touched={touched.imageFile}
+                    onChange={onHandleFileChange}
                 />
 
-                <button
-                    type="submit"
-                    className="btn btn-primary w-100"
-                    disabled={isSubmitting}
-                >
-                    {isSubmitting ? "Створення..." : "Створити"}
-                </button>
+                <button type="submit" className="btn btn-primary">Додати</button>
 
-                {isSubmitting && <LoadingOverlay />}
+                {isLoading && <LoadingOverlay />}
             </form>
         </>
     );
