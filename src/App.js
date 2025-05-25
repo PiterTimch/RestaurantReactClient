@@ -6,6 +6,8 @@ import NoMatch from "./pages/NoMatch";
 import CategoriesCreateForm from "./pages/categories/Create";
 import Home from "./pages/Home";
 import CategoriesUpdateForm from "./pages/categories/Update";
+import Login from "./pages/account/Login";
+import LoginAccountForm from "./pages/account/Login";
 
 const App = () => {
 
@@ -19,6 +21,10 @@ const App = () => {
                         <Route index element={<CategoriesPage />} />
                         <Route path="create" element={<CategoriesCreateForm />} />
                         <Route path="update/:slug" element={<CategoriesUpdateForm />} />
+                    </Route>
+
+                    <Route path={"account"}>
+                        <Route path={"login"} element={<LoginAccountForm/>}/>
                     </Route>
 
                     <Route path="*" element={<NoMatch />} />

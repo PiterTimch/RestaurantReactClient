@@ -9,10 +9,12 @@ const Layout = () => {
                     <div className="collapse navbar-collapse">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                             <li className="nav-item">
-                                <Link className="nav-link" to="/categories/">Перегляд</Link>
+                                <Link className="nav-link" to="/categories/">Категорії</Link>
                             </li>
+                        </ul>
+                        <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                             <li className="nav-item">
-                                <Link className="nav-link" to="/categories/create">Додати</Link>
+                                <Link className="nav-link" to="/account/login">Вхід</Link>
                             </li>
                         </ul>
                     </div>

@@ -55,46 +55,50 @@ const CategoriesPage = () => {
             {list.length === 0 ? (
                 <h2>Список пустий</h2>
             ) : (
-                <table className="table">
-                    <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Назва</th>
-                        <th>Зображення</th>
-                        <th>Дії</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {list.map((item) => (
-                        <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>{item.name}</td>
-                            <td>
-                                <img
-                                    src={`${BASE_URL}/images/200_${item.image}`}
-                                    alt={item.name}
-                                    width={75}
-                                />
-                            </td>
-                            <td>
-                                <Link
-                                    to={`update/${item.slug}`}
-                                    className="btn btn-success me-2"
-                                >
-                                    Edit
-                                </Link>
-                                <button
-                                    type="button"
-                                    className="btn btn-danger"
-                                    onClick={() => handleDeleteClick(item.id)}
-                                >
-                                    Delete
-                                </button>
-                            </td>
+                <>
+                    <Link to={"/categories/create"} className={"my-3 btn btn-success"}>Додати</Link>
+
+                    <table className="table">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Назва</th>
+                            <th>Зображення</th>
+                            <th>Дії</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {list.map((item) => (
+                            <tr key={item.id}>
+                                <td>{item.id}</td>
+                                <td>{item.name}</td>
+                                <td>
+                                    <img
+                                        src={`${BASE_URL}/images/200_${item.image}`}
+                                        alt={item.name}
+                                        width={75}
+                                    />
+                                </td>
+                                <td>
+                                    <Link
+                                        to={`update/${item.slug}`}
+                                        className="btn btn-success me-2"
+                                    >
+                                        Edit
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        className="btn btn-danger"
+                                        onClick={() => handleDeleteClick(item.id)}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </>
             )}
         </>
     );
