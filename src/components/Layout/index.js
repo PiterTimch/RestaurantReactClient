@@ -1,9 +1,17 @@
-import {Link, Outlet} from "react-router-dom";
+import {Link, Outlet, useNavigate} from "react-router-dom";
 import {useAuthStore} from "../../store/authStore";
+import {BASE_URL} from "../../api/apiConfig";
 
 const Layout = () => {
     const user = useAuthStore((state) => state.user);
     const logout = useAuthStore((state) => state.logout);
+
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        logout();
+        navigate("/");
+    }
 
     return (
         <div className={"container"}>
@@ -21,12 +29,15 @@ const Layout = () => {
                                 <div className="navbar">
                                     {user ? (
                                         <div className="flex items-center gap-2">
-                                            <img src={`http://localhost:5116/images/50_${user.image}`} alt="Avatar" className="rounded-circle mx-3" />
+                                            <img src={`${BASE_URL}/images/50_${user.image}`} alt="Avatar" className="rounded-circle mx-3" />
                                             <span className={"mx-3"}>{user.email}</span>
-                                            <button className={"mx-3 btn btn btn-light"} onClick={logout}>Вийти</button>
+                                            <button className={"mx-3 btn btn btn-light"} onClick={handleLogout}>Вийти</button>
                                         </div>
                                     ) : (
-                                        <Link className="nav-link btn btn-dark" to="/account/login">Увійти</Link>
+                                        <>
+                                            <Link className="btn btn-dark mx-3" to="/account/login">Увійти</Link>
+                                            <Link className="btn btn-primary" to="/account/register">Зареєструватися</Link>
+                                        </>
                                     )}
                                 </div>
                             </li>

@@ -71,7 +71,7 @@ const LoginAccountForm = () => {
                 </div>
             )}
 
-            <h1 className={"text-center"}>Додати категорію</h1>
+            <h1 className={"text-center"}>Вхід</h1>
             <form onSubmit={handleSubmit} noValidate className={"col-md-6 offset-md-3"}>
                 <EmailInput
                     label="Email"
