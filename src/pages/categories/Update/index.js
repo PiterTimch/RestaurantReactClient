@@ -7,6 +7,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
 import {mapServerErrorsToFormik} from "../../../helpers/formikErrorHelper";
+import {useAuthStore} from "../../../store/authStore";
+import ConfirmDialog from "../../../components/common/ConfirmDialog";
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().required("Назва не може бути порожньою"),
@@ -18,6 +20,8 @@ const CategoriesUpdateForm = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(true);
+    const [isAuthDialog, setIsAuthDialog] = useState(false);
+    const logout = useAuthStore((state) => state.logout);
 
     const formik = useFormik({
         initialValues: {
@@ -49,6 +53,11 @@ const CategoriesUpdateForm = () => {
                 console.error("Send request error", err);
 
                 mapServerErrorsToFormik(err, setErrors);
+
+                if (err.response && err.response.status === 401)
+                {
+                    setIsAuthDialog(true);
+                }
 
                 setIsLoading(false);
             }
@@ -87,6 +96,22 @@ const CategoriesUpdateForm = () => {
                 <div className="alert alert-danger" role="alert">
                     {errors.general}
                 </div>
+            )}
+
+            {isAuthDialog && (
+                <ConfirmDialog
+                    message="Ви не авторизовані, або ваша сесія завершилася. Бажаєте увійти?"
+                    onConfirm={() => {
+                        setIsAuthDialog(false);
+                        logout();
+                        navigate("/account/login");
+                    }}
+                    onCancel={() => {
+                        setIsAuthDialog(false);
+                        logout();
+                        navigate("/");
+                    }}
+                />
             )}
 
             <h1 className="text-center">Редагувати категорію</h1>

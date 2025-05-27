@@ -7,6 +7,11 @@ export const mapServerErrorsToFormik = (err, setErrors) => {
         const { errors } = data;
         if (errors && typeof errors === 'object') {
             Object.entries(errors).forEach(([key, messages]) => {
+                if (key === "") {
+                    serverErrors.general = Array.isArray(messages)
+                        ? messages.join(" ")
+                        : messages;
+                }
                 const field = key.charAt(0).toLowerCase() + key.slice(1);
                 serverErrors[field] = Array.isArray(messages)
                     ? messages.join(" ")

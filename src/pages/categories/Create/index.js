@@ -8,6 +8,8 @@ import {BASE_URL} from "../../../api/apiConfig";
 import {useState} from "react";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
 import {mapServerErrorsToFormik} from "../../../helpers/formikErrorHelper";
+import ConfirmDialog from "../../../components/common/ConfirmDialog";
+import {useAuthStore} from "../../../store/authStore";
 
 const validationSchema = Yup.object().shape({
     name: Yup.string().required("Назва не може бути порожньою"),
@@ -17,6 +19,8 @@ const validationSchema = Yup.object().shape({
 
 const CategoriesCreateForm = () => {
     const [isLoading, setIsLoading] = useState(false);
+    const [isAuthDialog, setIsAuthDialog] = useState(false);
+    const logout = useAuthStore((state) => state.logout);
 
     const initValues = {
         name: "",
@@ -41,6 +45,11 @@ const CategoriesCreateForm = () => {
             console.error("Send request error", err);
 
             mapServerErrorsToFormik(err, setErrors);
+
+            if (err.response && err.response.status === 401)
+            {
+                setIsAuthDialog(true);
+            }
 
             setIsLoading(false);
         }
@@ -68,6 +77,22 @@ const CategoriesCreateForm = () => {
 
     return (
         <>
+            {isAuthDialog && (
+                <ConfirmDialog
+                    message="Ви не авторизовані, або ваша сесія завершилася. Бажаєте увійти?"
+                    onConfirm={() => {
+                        setIsAuthDialog(false);
+                        logout();
+                        navigate("/account/login");
+                    }}
+                    onCancel={() => {
+                        setIsAuthDialog(false);
+                        logout();
+                        navigate("/");
+                    }}
+                />
+            )}
+
             {errors.general && (
                 <div className="alert alert-danger" role="alert">
                     {errors.general}

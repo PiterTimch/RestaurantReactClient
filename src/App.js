@@ -8,8 +8,30 @@ import Home from "./pages/Home";
 import CategoriesUpdateForm from "./pages/categories/Update";
 import Login from "./pages/account/Login";
 import LoginAccountForm from "./pages/account/Login";
+import {useEffect} from "react";
+import {useAuthStore} from "./store/authStore";
+import {jwtDecode} from "jwt-decode";
 
 const App = () => {
+    const setUser = useAuthStore((state) => state.setUser);
+
+    useEffect(() => {
+        const token = localStorage.getItem("jwt");
+        if (token) {
+            try {
+                const decoded = jwtDecode(token);
+                // Перевірка на час закінчення
+                if (decoded.exp * 1000 > Date.now()) {
+                    setUser(decoded);
+                } else {
+                    localStorage.removeItem("jwt");
+                }
+            } catch (e) {
+                console.error("Invalid token", e);
+                localStorage.removeItem("jwt");
+            }
+        }
+    }, []);
 
     return (
         <>

@@ -8,6 +8,8 @@ import LoadingOverlay from "../../../components/common/LoadingOverlay";
 import {mapServerErrorsToFormik} from "../../../helpers/formikErrorHelper";
 import {EmailInput} from "../../../components/common/EmailInput";
 import {PasswordInput} from "../../../components/common/PasswordInput";
+import {jwtDecode} from "jwt-decode";
+import {useAuthStore} from "../../../store/authStore";
 
 const validationSchema = Yup.object().shape({
     email: Yup.string().email("Введіть правильний формат, наприклад ex@gmail.com").required("Пошта не може бути порожньою"),
@@ -16,6 +18,8 @@ const validationSchema = Yup.object().shape({
 
 const LoginAccountForm = () => {
     const [isLoading, setIsLoading] = useState(false);
+
+    const setUser = useAuthStore((state) => state.setUser);
 
     const initValues = {
         email: "",
@@ -28,7 +32,17 @@ const LoginAccountForm = () => {
         try {
             var result = await axiosInstance.post(`${BASE_URL}/api/Account/login`, values);
             console.log("Server result", result);
-            navigate("..");
+
+            const token = result.data.token;
+
+            localStorage.setItem("jwt", token);
+
+            const decoded = jwtDecode(token);
+            setUser(decoded);
+
+            console.log("Decoded", decoded);
+
+            navigate("/");
 
         } catch(err) {
             console.error("Send request error", err);

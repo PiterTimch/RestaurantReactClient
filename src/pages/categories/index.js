@@ -1,15 +1,20 @@
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../api/apiConfig";
 import axiosInstance from "../../api/axiosInstance";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
+import {useAuthStore} from "../../store/authStore";
 
 const CategoriesPage = () => {
     const [list, setList] = useState([]);
     const [isDeleting, setIsDeleting] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
+    const [isAuthDialog, setIsAuthDialog] = useState(false);
     const [selectedId, setSelectedId] = useState(null);
+
+    const navigate = useNavigate();
+    const logout = useAuthStore((state) => state.logout);
 
     useEffect(() => {
         axiosInstance
@@ -32,6 +37,10 @@ const CategoriesPage = () => {
             setList((prev) => prev.filter((item) => item.id !== selectedId));
         } catch (err) {
             console.error("Помилка при видаленні", err);
+            if (err.response && err.response.status === 401)
+            {
+                setIsAuthDialog(true);
+            }
         } finally {
             setIsDeleting(false);
             setConfirmVisible(false);
@@ -47,6 +56,21 @@ const CategoriesPage = () => {
                     message="Ви впевнені, що хочете видалити цю категорію?"
                     onConfirm={handleConfirmDelete}
                     onCancel={() => setConfirmVisible(false)}
+                />
+            )}
+            {isAuthDialog && (
+                <ConfirmDialog
+                    message="Ви не авторизовані, або ваша сесія завершилася. Бажаєте увійти?"
+                    onConfirm={() => {
+                        setIsAuthDialog(false);
+                        logout();
+                        navigate("/account/login");
+                    }}
+                    onCancel={() => {
+                        setIsAuthDialog(false);
+                        logout();
+                        navigate("/");
+                    }}
                 />
             )}
 
