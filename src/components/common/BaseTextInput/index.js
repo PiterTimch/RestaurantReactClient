@@ -1,6 +1,6 @@
 import classNames from "classnames";
 
-const BaseTextInput = ({field, label, value, error, touched, onChange}) => {
+const BaseTextInput = ({field, label, value, error, touched, onChange, type="text"}) => {
 
     const isError = touched && error;
 
@@ -8,7 +8,7 @@ const BaseTextInput = ({field, label, value, error, touched, onChange}) => {
         <>
             <div className="mb-3">
                 <label htmlFor={field} className="form-label">{label}</label>
-                <input type="text"
+                <input type={type}
                        className={classNames("form-control", {
                            "is-invalid": isError
                        })}

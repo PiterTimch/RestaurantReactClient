@@ -1,13 +1,19 @@
 import { useEffect, useState } from "react";
 import { BASE_URL } from "../../api/apiConfig";
 import axiosInstance from "../../api/axiosInstance";
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useNavigate, useSearchParams} from "react-router-dom";
 import LoadingOverlay from "../../components/common/LoadingOverlay";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import {useAuthStore} from "../../store/authStore";
+import CategorySearchForm from "../../components/CategorySearchForm";
+import PaginationBar from "../../components/common/PaginationBar";
 
 const CategoriesPage = () => {
-    const [list, setList] = useState([]);
+    const [items, setItems] = useState([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const [isDeleting, setIsDeleting] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState(false);
     const [isAuthDialog, setIsAuthDialog] = useState(false);
@@ -16,12 +22,34 @@ const CategoriesPage = () => {
     const navigate = useNavigate();
     const logout = useAuthStore((state) => state.logout);
 
+    const fetchCategories = async (params = {}) => {
+        try {
+            const query = new URLSearchParams(params).toString();
+            const res = await axiosInstance.get(`/api/Categories/search?${query}`);
+            setItems(res.data.items);
+            setTotalPages(res.data.totalPge);
+            setCurrentPage(res.data.currentPge);
+        } catch (err) {
+            console.error("Помилка при завантаженні категорій", err);
+        }
+    };
+
     useEffect(() => {
-        axiosInstance
-            .get("/api/Categories/list")
-            .then((res) => setList(res.data))
-            .catch((err) => console.error(err));
+        fetchCategories(searchParams);
     }, []);
+
+    const handleSearch = (params) => {
+        const query = new URLSearchParams(params);
+        setSearchParams(query);
+        fetchCategories(params);
+    };
+
+    const handlePageChange = (page) => {
+        const params = Object.fromEntries(searchParams.entries());
+        const newParams = { ...params, pageNumber: page };
+        setSearchParams(newParams);
+        fetchCategories(newParams);
+    };
 
     const handleDeleteClick = (id) => {
         setSelectedId(id);
@@ -34,11 +62,10 @@ const CategoriesPage = () => {
             await axiosInstance.delete(`/api/Categories/delete`, {
                 data: { id: selectedId }
             });
-            setList((prev) => prev.filter((item) => item.id !== selectedId));
+            setItems((prev) => prev.filter((item) => item.id !== selectedId));
         } catch (err) {
             console.error("Помилка при видаленні", err);
-            if (err.response && err.response.status === 401)
-            {
+            if (err.response?.status === 401) {
                 setIsAuthDialog(true);
             }
         } finally {
@@ -60,7 +87,7 @@ const CategoriesPage = () => {
             )}
             {isAuthDialog && (
                 <ConfirmDialog
-                    message="Ви не авторизовані, або ваша сесія завершилася. Бажаєте увійти?"
+                    message="Ви не авторизовані. Увійти зараз?"
                     onConfirm={() => {
                         setIsAuthDialog(false);
                         logout();
@@ -75,13 +102,14 @@ const CategoriesPage = () => {
             )}
 
             <h1 className="text-center">Категорії</h1>
+            <CategorySearchForm onSearch={handleSearch} />
 
-            {list.length === 0 ? (
+            <Link to={"/categories/create"} className="my-3 btn btn-success">Додати</Link>
+
+            {items.length === 0 ? (
                 <h2>Список пустий</h2>
             ) : (
                 <>
-                    <Link to={"/categories/create"} className={"my-3 btn btn-success"}>Додати</Link>
-
                     <table className="table">
                         <thead>
                         <tr>
@@ -92,7 +120,7 @@ const CategoriesPage = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {list.map((item) => (
+                        {items.map((item) => (
                             <tr key={item.id}>
                                 <td>{item.id}</td>
                                 <td>{item.name}</td>
@@ -104,17 +132,8 @@ const CategoriesPage = () => {
                                     />
                                 </td>
                                 <td>
-                                    <Link
-                                        to={`update/${item.slug}`}
-                                        className="btn btn-success me-2"
-                                    >
-                                        Edit
-                                    </Link>
-                                    <button
-                                        type="button"
-                                        className="btn btn-danger"
-                                        onClick={() => handleDeleteClick(item.id)}
-                                    >
+                                    <Link to={`update/${item.slug}`} className="btn btn-success me-2">Edit</Link>
+                                    <button className="btn btn-danger" onClick={() => handleDeleteClick(item.id)}>
                                         Delete
                                     </button>
                                 </td>
@@ -122,6 +141,12 @@ const CategoriesPage = () => {
                         ))}
                         </tbody>
                     </table>
+
+                    <PaginationBar
+                        totalPages={totalPages}
+                        currentPage={currentPage}
+                        onPageChange={handlePageChange}
+                    />
                 </>
             )}
         </>
