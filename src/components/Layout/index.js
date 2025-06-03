@@ -23,6 +23,9 @@ const Layout = () => {
                             <li className="nav-item">
                                 <Link className="nav-link" to="/categories/">Категорії</Link>
                             </li>
+                            <li className="nav-item">
+                                <Link className="nav-link" to="/products/list/">Страви</Link>
+                            </li>
                         </ul>
                         <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
                             <li className="nav-item">

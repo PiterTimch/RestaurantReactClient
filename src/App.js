@@ -12,6 +12,7 @@ import {useEffect} from "react";
 import {useAuthStore} from "./store/authStore";
 import {jwtDecode} from "jwt-decode";
 import ProductItemPage from "./pages/products/Item";
+import ProductsListPage from "./pages/products/List";
 
 const App = () => {
     const setUser = useAuthStore((state) => state.setUser);
@@ -47,6 +48,7 @@ const App = () => {
                     </Route>
 
                     <Route path="products">
+                        <Route path="list/" element={<ProductsListPage/>}></Route>
                         <Route path="list/:slug" element={<ProductItemPage/>}></Route>
                     </Route>
 

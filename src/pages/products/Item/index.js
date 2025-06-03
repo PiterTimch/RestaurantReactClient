@@ -3,11 +3,14 @@ import {useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import {BASE_URL} from "../../../api/apiConfig";
+import LoadingOverlay from "../../../components/common/LoadingOverlay";
 
 const ProductItemPage = () => {
     const [product, setProduct] = useState({});
     const [mainImage, setMainImage] = useState(null);
     const { slug } = useParams();
+
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -21,6 +24,8 @@ const ProductItemPage = () => {
                 }
             } catch (err) {
                 console.log(err);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchProduct();
@@ -62,19 +67,14 @@ const ProductItemPage = () => {
                             <span className="h4 me-2">{product.price} грн</span>
                         </div>
 
-                        {/*<div className="mb-4">*/}
-                        {/*    <h5>Розмір:</h5>*/}
-                        {/*    <p className="mb-0">{product.productSize?.name}</p>*/}
-                        {/*</div>*/}
-
                         <div className="mb-4">
                             <h5>Розмір:</h5>
                             <div className="btn-group" role="group" aria-label="Size selection">
                                 <input type="radio" className="btn-check" name="size" id={product.productSize?.name} autoComplete="off" defaultChecked />
                                 <label className="btn btn-outline-primary" htmlFor={product.productSize?.name}>{product.productSize?.name}</label>
 
-                                <input type="radio" className="btn-check" name="size" autoComplete="off" />
-                                <label className="btn btn-outline-primary">Колись тут будуть інші розміра :)</label>
+                                <input type="radio" id="other-size" className="btn-check" name="size" autoComplete="off" />
+                                <label htmlFor="other-size" className="btn btn-outline-primary">Колись тут будуть інші розміра :)</label>
                             </div>
                         </div>
 
@@ -109,6 +109,7 @@ const ProductItemPage = () => {
                     </div>
                 </div>
             </div>
+            {isLoading && <LoadingOverlay />}
         </>
     );
 }
