@@ -11,6 +11,7 @@ import LoginAccountForm from "./pages/account/Login";
 import {useEffect} from "react";
 import {useAuthStore} from "./store/authStore";
 import {jwtDecode} from "jwt-decode";
+import ProductItemPage from "./pages/products/Item";
 
 const App = () => {
     const setUser = useAuthStore((state) => state.setUser);
@@ -20,7 +21,7 @@ const App = () => {
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-                // Перевірка на час закінчення
+
                 if (decoded.exp * 1000 > Date.now()) {
                     setUser(decoded);
                 } else {
@@ -43,6 +44,10 @@ const App = () => {
                         <Route index element={<CategoriesPage />} />
                         <Route path="create" element={<CategoriesCreateForm />} />
                         <Route path="update/:slug" element={<CategoriesUpdateForm />} />
+                    </Route>
+
+                    <Route path="products">
+                        <Route path="list/:slug" element={<ProductItemPage/>}></Route>
                     </Route>
 
                     <Route path={"account"}>
