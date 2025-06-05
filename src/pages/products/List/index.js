@@ -28,6 +28,9 @@ const ProductsListPage = () => {
 
     return (
         <div className="container py-5">
+
+            <Link to="/products/create/" className="my-3 btn btn-success">Додати</Link>
+
             <div className="row g-4">
                 {productsList?.map((product) => (
                     product.variants?.length > 0

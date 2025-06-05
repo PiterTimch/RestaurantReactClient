@@ -7,7 +7,12 @@ const SimpleCard = ({product}) => {
             <div key={product.id} className="col-md-6 col-lg-4">
                 <div className="card h-100 shadow-sm border-0">
                     <img
-                        src={`${BASE_URL}/images/400_${product.productImages[0]?.name}`}
+                        src={
+                            product.productImages?.length > 0
+                                ? `${BASE_URL}/images/400_${product.productImages[0].name}`
+                                : '/defaultImages/no-product-image.jpg'
+                        }
+
                         className="card-img-top rounded-top"
                         alt={product.name}
                         style={{ height: "300px", objectFit: "cover" }}

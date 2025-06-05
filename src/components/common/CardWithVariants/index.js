@@ -17,7 +17,7 @@ const CardWithVariants = ({ product }) => {
                 <img
                     src={`${BASE_URL}/images/400_${
                         selectedVariant.productImages[0]?.name
-                    }`}
+                    }` || '/defaultImages/no-product-image.jpg'}
                     className="card-img-top rounded-top"
                     alt={product.name}
                     style={{ height: "300px", objectFit: "cover" }}
