@@ -1,6 +1,6 @@
 import './index.css';
 import {useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import {BASE_URL} from "../../../api/apiConfig";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
@@ -9,6 +9,7 @@ const ProductItemPage = () => {
     const [product, setProduct] = useState({});
     const [mainImage, setMainImage] = useState(null);
     const { slug } = useParams();
+    const [selectedVariant, setSelectedVariant] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -16,12 +17,30 @@ const ProductItemPage = () => {
         const fetchProduct = async () => {
             try {
                 const res = await axiosInstance.get(`/api/Products/${slug}`);
-                console.log(res.data);
-
+                const {data} = await res;
+                console.log(data);
                 setProduct(res.data);
-                if (res.data.productImages?.length > 0) {
-                    setMainImage(`${BASE_URL}/images/800_${res.data.productImages[0].name}`);
+
+                if (data.variants && data.variants.length > 0) {
+                    setSelectedVariant(data.variants[0]);
+                    if (data.variants[0].productImages.length > 0) {
+                        setMainImage(`${BASE_URL}/images/800_${data.variants[0].productImages[0].name}`);
+                    }
+                    else {
+                        setMainImage(null);
+                    }
                 }
+
+                else {
+                    setSelectedVariant(null);
+                    if (data.productImages && data.productImages.length > 0) {
+                        setMainImage(`${BASE_URL}/images/800_${data.productImages[0].name}`);
+                    }
+                    else {
+                        setMainImage(null);
+                    }
+                }
+
             } catch (err) {
                 console.log(err);
             } finally {
@@ -31,6 +50,10 @@ const ProductItemPage = () => {
         fetchProduct();
     }, [slug]);
 
+    const handleThumbnailClick = (imgName) => {
+        setMainImage(`${BASE_URL}/images/800_${imgName}`);
+    };
+
     return(
         <>
             <div className="container mt-5">
@@ -38,21 +61,21 @@ const ProductItemPage = () => {
                     <div className="col-md-6 mb-4">
                         <img
                             src={
-                                mainImage || "https://via.placeholder.com/400x300?text=No+Image"
+                                mainImage
                             }
                             alt={product.name}
                             className="img-fluid rounded mb-3 product-image"
                             id="mainImage"
                         />
-                        <div className="d-flex gap-5 flex-wrap">
-                            {product.productImages?.map((img, index) => (
+                        <div className="d-flex gap-3 flex-wrap">
+                            {(selectedVariant ? selectedVariant.productImages : product.productImages)?.map((img) => (
                                 <img
                                     key={img.id}
                                     src={`${BASE_URL}/images/200_${img.name}`}
-                                    alt={`Product thumbnail ${index + 1}`}
+                                    alt={`Thumbnail ${img.id}`}
                                     className="thumbnail rounded border"
                                     style={{ width: '70px', height: '70px', objectFit: 'cover', cursor: 'pointer' }}
-                                    onClick={() => setMainImage(`${BASE_URL}/images/800_${img.name}`)}
+                                    onClick={() => handleThumbnailClick(img.name)}
                                 />
                             ))}
                         </div>
@@ -61,22 +84,62 @@ const ProductItemPage = () => {
                     <div className="col-md-6">
                         <h2 className="mb-3">{product.name}</h2>
                         <p className="text-muted mb-2">Категорія: {product.category?.name}</p>
-                        <p className="text-muted mb-2">Вага: {product.weight} г</p>
+
+                        <p className="text-muted mb-2">Вага: {selectedVariant ? selectedVariant.weight : product.weight} г</p>
 
                         <div className="mb-3">
-                            <span className="h4 me-2">{product.price} грн</span>
+                            <span className="h4 me-2">{selectedVariant ? selectedVariant.price : product.price} грн</span>
                         </div>
 
-                        <div className="mb-4">
-                            <h5>Розмір:</h5>
-                            <div className="btn-group" role="group" aria-label="Size selection">
-                                <input type="radio" className="btn-check" name="size" id={product.productSize?.name} autoComplete="off" defaultChecked />
-                                <label className="btn btn-outline-primary" htmlFor={product.productSize?.name}>{product.productSize?.name}</label>
-
-                                <input type="radio" id="other-size" className="btn-check" name="size" autoComplete="off" />
-                                <label htmlFor="other-size" className="btn btn-outline-primary">Колись тут будуть інші розміра :)</label>
+                        {product.variants && product.variants.length > 0 ? (
+                            <div className="mb-4">
+                                <h5>Розмір:</h5>
+                                <div className="btn-group" role="group" aria-label="Size selection">
+                                    {product.variants.map((variant) => (
+                                        <Fragment key={variant.id}>
+                                            <input
+                                                type="radio"
+                                                className="btn-check"
+                                                name="size"
+                                                id={`size-${variant.id}`}
+                                                autoComplete="off"
+                                                checked={selectedVariant?.id === variant.id}
+                                                onChange={() => {
+                                                    setSelectedVariant(variant);
+                                                    // При зміні варіанту оновлюємо основне фото
+                                                    if (variant.productImages.length > 0) {
+                                                        setMainImage(`${BASE_URL}/images/800_${variant.productImages[0].name}`);
+                                                    } else {
+                                                        setMainImage(null);
+                                                    }
+                                                }}
+                                            />
+                                            <label className="btn btn-outline-primary" htmlFor={`size-${variant.id}`}>
+                                                {variant.productSize?.name}
+                                            </label>
+                                        </Fragment>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            // Якщо варіантів немає, показуємо розмір продукту (як було)
+                            <div className="mb-4">
+                                <h5>Розмір:</h5>
+                                <div className="btn-group" role="group" aria-label="Size selection">
+                                    <input
+                                        type="radio"
+                                        className="btn-check"
+                                        name="size"
+                                        id={product.productSize?.name}
+                                        autoComplete="off"
+                                        defaultChecked
+                                    />
+                                    <label className="btn btn-outline-primary" htmlFor={product.productSize?.name}>
+                                        {product.productSize?.name}
+                                    </label>
+                                </div>
+                            </div>
+                        )}
 
                         <button className="btn btn-primary btn-lg mb-3 me-2">
                             <i className="bi bi-cart-plus"></i> Додати в кошик
