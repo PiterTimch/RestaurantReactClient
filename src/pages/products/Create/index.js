@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import ImageUploaderSortable from "../../../components/ProductCreatePage/ImageUploaderSortable";
+import {useNavigate} from "react-router-dom";
 
 const CreateProductPage = () => {
     const [productData, setProductData] = useState({
@@ -20,6 +21,8 @@ const CreateProductPage = () => {
     const [ingredients, setIngredients] = useState([]);
 
     const [errorMessage, setErrorMessage] = useState(null);
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -56,34 +59,18 @@ const CreateProductPage = () => {
 
     const handleCreateProduct = async () => {
         try {
-            const formData = new FormData();
+            productData.imageFiles = images;
+            console.log("Send Data server", productData);
+            console.log("Send Data server", images);
 
-            formData.append("Name", productData.name);
-            formData.append("Slug", productData.slug);
-            formData.append("Weight", productData.weight.toString());
-            formData.append("Price", productData.price.toString());
-
-            if (productData.categoryId)
-                formData.append("CategoryId", productData.categoryId.toString());
-            if (productData.productSizeId)
-                formData.append("ProductSizeId", productData.productSizeId.toString());
-
-            productData.ingredientIds.forEach(id => {
-                formData.append("IngredientIds", id.toString());
-            });
-
-            images.forEach((img, index) => {
-                formData.append(`ProductImages[${index}].ImageFile`, img.file); // File або Blob
-                formData.append(`ProductImages[${index}].Priority`, index.toString()); // Пріорітет як рядок
-            });
-
-            const res = await axiosInstance.post("/api/Products/create", formData, {
+            const res = await axiosInstance.post("/api/Products/create", productData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 }
             });
-
+            navigate("..");
             console.log("Продукт:", res.data);
+
         } catch (err) {
             setErrorMessage(err);
             console.error(err);

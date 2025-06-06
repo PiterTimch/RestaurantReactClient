@@ -7,7 +7,6 @@ const ImageUploaderSortable = ({ images, setImages }) => {
     const fileInputRef = useRef(null);
     const imagesRef = useRef(images); // зберігаємо поточний масив
 
-    // завжди актуалізуємо ref до images
     useEffect(() => {
         imagesRef.current = images;
     }, [images]);
@@ -25,7 +24,7 @@ const ImageUploaderSortable = ({ images, setImages }) => {
         });
 
         return () => sortable.destroy();
-    }, [setImages]); // ⚠️ НЕ `[images, setImages]`
+    }, [setImages]);
 
     const handleFiles = (event) => {
         const files = event.target.files;
@@ -33,11 +32,9 @@ const ImageUploaderSortable = ({ images, setImages }) => {
 
         Array.from(files).forEach((file) => {
             if (!file.type.startsWith('image/')) return;
-
-            const preview = URL.createObjectURL(file);
-            newImages.push({ file, preview });
+            newImages.push( file );
         });
-
+        //
         setImages((prev) => [...prev, ...newImages]);
         fileInputRef.current.value = '';
     };
@@ -65,7 +62,7 @@ const ImageUploaderSortable = ({ images, setImages }) => {
                     <div className="col-3" key={index}>
                         <div className="position-relative">
                             <img
-                                src={img.preview}
+                                src={URL.createObjectURL(img)}
                                 alt="preview"
                                 className="img-fluid rounded border"
                                 style={{ height: '100px', objectFit: 'cover' }}
