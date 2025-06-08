@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import axiosInstance from "../../../api/axiosInstance";
-import ImageUploaderSortable from "../../../components/ProductCreatePage/ImageUploaderSortable";
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import DragDropUpload from "../../../components/ProductCreatePage/DragDropUpload";
+import {BASE_URL} from "../../../api/apiConfig";
 
-const CreateProductPage = () => {
+const EditProductPage = () => {
+    const { id } = useParams();
+
+
+
     const [productData, setProductData] = useState({
         name: "",
         slug: "",
@@ -21,9 +25,33 @@ const CreateProductPage = () => {
     const [categories, setCategories] = useState([]);
     const [ingredients, setIngredients] = useState([]);
 
+    const navigate = useNavigate();
+
     const [errorMessage, setErrorMessage] = useState(null);
 
-    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!id) return;
+
+        axiosInstance.get(`/api/Products/${id}`)
+            .then(res => {
+                const current = res.data;
+                const { productImages } = res.data;
+                console.log("current", current);
+                console.log("productImages", productImages);
+
+                const updatedFileList = productImages?.map((image) => ({
+                    uid: image.id.toString(),
+                    name: image.name,
+                    url: `${BASE_URL}/images/800_${image.name}`,
+                    originFileObj: new File([new Blob([''])],image.name,{type: 'old-image'})
+                })) || [];
+
+                setImages(updatedFileList);
+
+            })
+            .catch(err => console.error("Error loading product", err));
+    }, [id]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,6 +62,7 @@ const CreateProductPage = () => {
                     axiosInstance.get("/api/Products/ingredients"),
                 ]);
 
+                console.log("Categories", categoriesRes.data);
                 setSizes(Array.isArray(sizesRes.data) ? sizesRes.data : []);
                 setCategories(Array.isArray(categoriesRes.data) ? categoriesRes.data : []);
                 setIngredients(Array.isArray(ingredientsRes.data) ? ingredientsRes.data : []);
@@ -58,12 +87,13 @@ const CreateProductPage = () => {
         });
     };
 
-    const handleCreateProduct = async () => {
+    const handleEditProduct = async () => {
         try {
+            //console.log("Images", images);
+            productData.id=id;
             productData.imageFiles = images.map(x=>x.originFileObj);
             console.log("productData", productData);
-
-            const res = await axiosInstance.post("/api/Products/create", productData, {
+            const res = await axiosInstance.put("/api/Products/update", productData, {
                 headers: {
                     "Content-Type": "multipart/form-data"
                 }
@@ -80,7 +110,7 @@ const CreateProductPage = () => {
     return (
 
         <div className="container mt-5">
-            <h2 className="mb-4">Створення продукту</h2>
+            <h2 className="mb-4">Змінити продукту</h2>
             <div className="row">
 
                 {errorMessage && (
@@ -88,7 +118,7 @@ const CreateProductPage = () => {
                         {typeof errorMessage === 'string'
                             ? errorMessage
                             :
-                        JSON.stringify(errorMessage)}
+                            JSON.stringify(errorMessage)}
                     </div>
                 )}
 
@@ -97,6 +127,8 @@ const CreateProductPage = () => {
                     <div className="border rounded p-3 h-100">
                         {/*<ImageUploaderSortable images={images} setImages={setImages} />*/}
                         <DragDropUpload fileList={images} setFileList={setImages} />
+
+
                     </div>
                 </div>
 
@@ -168,8 +200,8 @@ const CreateProductPage = () => {
                                 ))}
                             </select>
                         </div>
-                        <button className="btn btn-success" onClick={handleCreateProduct}>
-                            Додати продукт
+                        <button className="btn btn-success" onClick={handleEditProduct}>
+                            Оновити продукт
                         </button>
                     </div>
                 </div>
@@ -206,4 +238,4 @@ const CreateProductPage = () => {
     );
 };
 
-export default CreateProductPage;
+export default EditProductPage;

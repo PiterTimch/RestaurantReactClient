@@ -14,6 +14,7 @@ import {jwtDecode} from "jwt-decode";
 import ProductItemPage from "./pages/products/Item";
 import ProductsListPage from "./pages/products/List";
 import ProductCreatePage from "./pages/products/Create";
+import EditProductPage from "./pages/products/Edit";
 
 const App = () => {
     const setUser = useAuthStore((state) => state.setUser);
@@ -52,6 +53,7 @@ const App = () => {
                         <Route path="list/" element={<ProductsListPage/>}></Route>
                         <Route path="create" element={<ProductCreatePage/>}></Route>
                         <Route path="list/:slug" element={<ProductItemPage/>}></Route>
+                        <Route path={"edit/:id"} element={<EditProductPage/>} />
                     </Route>
 
                     <Route path={"account"}>
