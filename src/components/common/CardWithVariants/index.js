@@ -59,7 +59,7 @@ const CardWithVariants = ({ product }) => {
                             Хочу
                         </Link>
 
-                        <Link to={`/products/edit/${product.id}`} className={"btn btn-success"}>Edit</Link>
+                        <Link to={`/products/edit/${selectedVariant.id}`} className={"btn btn-success"}>Edit</Link>
                     </div>
                 </div>
             </div>

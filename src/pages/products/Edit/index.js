@@ -3,11 +3,11 @@ import axiosInstance from "../../../api/axiosInstance";
 import {useNavigate, useParams} from "react-router-dom";
 import DragDropUpload from "../../../components/ProductCreatePage/DragDropUpload";
 import {BASE_URL} from "../../../api/apiConfig";
+import LoadingOverlay from "../../../components/common/LoadingOverlay";
+import ConfirmDialog from "../../../components/common/ConfirmDialog";
 
 const EditProductPage = () => {
     const { id } = useParams();
-
-
 
     const [productData, setProductData] = useState({
         name: "",
@@ -26,9 +26,11 @@ const EditProductPage = () => {
     const [ingredients, setIngredients] = useState([]);
 
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [confirmVisible, setConfirmVisible] = useState(false);
 
     const [errorMessage, setErrorMessage] = useState(null);
-
 
     useEffect(() => {
         if (!id) return;
@@ -49,8 +51,19 @@ const EditProductPage = () => {
 
                 setImages(updatedFileList);
 
+                setProductData({
+                    name: current.name || "",
+                    slug: current.slug || "",
+                    price: current.price || "",
+                    weight: current.weight || "",
+                    productSizeId: current.productSize?.id || "",
+                    categoryId: current.category?.id || "",
+                    ingredientIds: current.productIngredients?.map(pi => pi.id) || [],
+                });
             })
             .catch(err => console.error("Error loading product", err));
+
+        setIsLoading(false);
     }, [id]);
 
     useEffect(() => {
@@ -89,6 +102,8 @@ const EditProductPage = () => {
 
     const handleEditProduct = async () => {
         try {
+            setIsLoading(true);
+
             //console.log("Images", images);
             productData.id=id;
             productData.imageFiles = images.map(x=>x.originFileObj);
@@ -98,18 +113,48 @@ const EditProductPage = () => {
                     "Content-Type": "multipart/form-data"
                 }
             });
-            navigate("..");
+            navigate("/products/list/");
             console.log("Продукт:", res.data);
 
         } catch (err) {
             setErrorMessage(err);
             console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleDeleteClick = () => {
+        setConfirmVisible(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        setIsDeleting(true);
+        try {
+            await axiosInstance.delete(`/api/Products/delete`, {
+                data: { id: id },
+            });
+
+            navigate("/products/list/");
+        } catch (err) {
+            console.error("Помилка при видаленні", err);
+        } finally {
+            setIsDeleting(false);
+            setConfirmVisible(false);
         }
     };
 
     return (
 
         <div className="container mt-5">
+            {isDeleting && <LoadingOverlay />}
+            {confirmVisible && (
+                <ConfirmDialog
+                    message="Ви впевнені, що хочете видалити цей продукт?"
+                    onConfirm={handleConfirmDelete}
+                    onCancel={() => setConfirmVisible(false)}
+                />
+            )}
             <h2 className="mb-4">Змінити продукту</h2>
             <div className="row">
 
@@ -127,8 +172,6 @@ const EditProductPage = () => {
                     <div className="border rounded p-3 h-100">
                         {/*<ImageUploaderSortable images={images} setImages={setImages} />*/}
                         <DragDropUpload fileList={images} setFileList={setImages} />
-
-
                     </div>
                 </div>
 
@@ -200,9 +243,11 @@ const EditProductPage = () => {
                                 ))}
                             </select>
                         </div>
-                        <button className="btn btn-success" onClick={handleEditProduct}>
+                        <button className="btn btn-success me-2" onClick={handleEditProduct}>
                             Оновити продукт
                         </button>
+
+                        <button className="btn btn-danger" onClick={handleDeleteClick}>Видалити</button>
                     </div>
                 </div>
             </div>
@@ -234,6 +279,8 @@ const EditProductPage = () => {
                     )}
                 </div>
             </div>
+
+            {isLoading && <LoadingOverlay />}
         </div>
     );
 };
