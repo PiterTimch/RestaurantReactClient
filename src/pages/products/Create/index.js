@@ -3,6 +3,7 @@ import axiosInstance from "../../../api/axiosInstance";
 import ImageUploaderSortable from "../../../components/ProductCreatePage/ImageUploaderSortable";
 import {useNavigate} from "react-router-dom";
 import DragDropUpload from "../../../components/ProductCreatePage/DragDropUpload";
+import LoadingOverlay from "../../../components/common/LoadingOverlay";
 
 const CreateProductPage = () => {
     const [productData, setProductData] = useState({
@@ -24,6 +25,7 @@ const CreateProductPage = () => {
     const [errorMessage, setErrorMessage] = useState(null);
 
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -60,6 +62,7 @@ const CreateProductPage = () => {
 
     const handleCreateProduct = async () => {
         try {
+            setIsLoading(true);
             productData.imageFiles = images.map(x=>x.originFileObj);
             console.log("productData", productData);
 
@@ -74,6 +77,8 @@ const CreateProductPage = () => {
         } catch (err) {
             setErrorMessage(err);
             console.error(err);
+        } finally {
+            setIsLoading(false)
         }
     };
 
@@ -202,6 +207,7 @@ const CreateProductPage = () => {
                     )}
                 </div>
             </div>
+            {isLoading && <LoadingOverlay />}
         </div>
     );
 };
