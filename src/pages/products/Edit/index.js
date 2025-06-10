@@ -5,6 +5,7 @@ import DragDropUpload from "../../../components/ProductCreatePage/DragDropUpload
 import {BASE_URL} from "../../../api/apiConfig";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
 import ConfirmDialog from "../../../components/common/ConfirmDialog";
+import {Input, Modal} from "antd";
 
 const EditProductPage = () => {
     const { id } = useParams();
@@ -32,6 +33,12 @@ const EditProductPage = () => {
 
     const [errorMessage, setErrorMessage] = useState(null);
 
+    const [isIngModalVisible, setIsIngModalVisible] = useState(false);
+    const[newIngredient, setNewIngredient] = useState({
+        name: "",
+        imageFile : null
+    });
+
     useEffect(() => {
         if (!id) return;
 
@@ -52,14 +59,22 @@ const EditProductPage = () => {
                 setImages(updatedFileList);
 
                 setProductData({
-                    name: current.name || "",
-                    slug: current.slug || "",
-                    price: current.price || "",
-                    weight: current.weight || "",
+                    ...updatedFileList,
+                    ...current,
                     productSizeId: current.productSize?.id || "",
                     categoryId: current.category?.id || "",
-                    ingredientIds: current.productIngredients?.map(pi => pi.id) || [],
+                    ingredientIds: current.productIngredients?.map(pi => pi.id) || []
                 });
+
+                // setProductData({
+                //     name: current.name || "",
+                //     slug: current.slug || "",
+                //     price: current.price || "",
+                //     weight: current.weight || "",
+                //     productSizeId: current.productSize?.id || "",
+                //     categoryId: current.category?.id || "",
+                //     ingredientIds: current.productIngredients?.map(pi => pi.id) || [],
+                // });
             })
             .catch(err => console.error("Error loading product", err));
 
@@ -98,6 +113,35 @@ const EditProductPage = () => {
             }
             return { ...prev, ingredientIds: newIds };
         });
+    };
+
+    const showIngModal = () => {
+        setIsIngModalVisible(true);
+    };
+
+    const handleIngModalOk = async () => {
+        try {
+
+            const res = await axiosInstance.post("/api/Products/ingredients", newIngredient, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+
+            const newIng = res.data;
+
+            setIngredients(prev => [...prev, newIng]);
+
+            setIsIngModalVisible(false);
+        } catch (error) {
+            console.log("Помилка при створенні інгредієнта");
+        }
+    };
+
+    const handleIngModalCancel = () => {
+        setIsIngModalVisible(false);
+        newIngredient.name = "";
+        newIngredient.imageFile = null;
     };
 
     const handleEditProduct = async () => {
@@ -274,11 +318,50 @@ const EditProductPage = () => {
                             {ing.name}
                         </div>
                     ))}
+
+                    <div
+                        onClick={() => showIngModal()}
+                        style={{
+                            cursor: "pointer",
+                            userSelect: "none",
+                            padding: "5px 10px",
+                            borderRadius: "5px",
+                            border: "1px solid black",
+                            backgroundColor: "gray",
+                            marginRight: 8,
+                            marginBottom: 8
+                        }}
+                    >+
+                    </div>
+
                     {productData.ingredientIds.length === 0 && (
                         <span className="text-muted">Жодного інгредієнта не додано</span>
                     )}
                 </div>
             </div>
+
+            <Modal
+                title="Додати інгредієнт"
+                open={isIngModalVisible}
+                onOk={handleIngModalOk}
+                onCancel={handleIngModalCancel}
+                okText="Додати"
+                cancelText="Скасувати"
+            >
+                <Input
+                    placeholder="Назва інгредієнта"
+                    value={newIngredient.name}
+                    onChange={(e) => setNewIngredient({...newIngredient, name: e.target.value})}
+                />
+
+                <Input
+                    type="file"
+                    className={`form-control mt-4`}
+                    onChange={(e) => setNewIngredient({...newIngredient, imageFile: e.target.files[0]})}
+                    accept="image/*"
+
+                />
+            </Modal>
 
             {isLoading && <LoadingOverlay />}
         </div>
