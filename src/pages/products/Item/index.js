@@ -4,6 +4,7 @@ import {Fragment, useEffect, useState} from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import {BASE_URL} from "../../../api/apiConfig";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
+import {useCartLogic} from "../../../hooks/useCartLogic";
 
 const ProductItemPage = () => {
     const [product, setProduct] = useState({});
@@ -12,6 +13,8 @@ const ProductItemPage = () => {
     const [selectedVariant, setSelectedVariant] = useState(null);
 
     const [isLoading, setIsLoading] = useState(true);
+
+    const { cartItem, isInCart, addToCart } = useCartLogic(product, mainImage, selectedVariant);
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -106,7 +109,6 @@ const ProductItemPage = () => {
                                                 checked={selectedVariant?.id === variant.id}
                                                 onChange={() => {
                                                     setSelectedVariant(variant);
-                                                    // При зміні варіанту оновлюємо основне фото
                                                     if (variant.productImages.length > 0) {
                                                         setMainImage(`${BASE_URL}/images/800_${variant.productImages[0].name}`);
                                                     } else {
@@ -122,7 +124,6 @@ const ProductItemPage = () => {
                                 </div>
                             </div>
                         ) : (
-                            // Якщо варіантів немає, показуємо розмір продукту (як було)
                             <div className="mb-4">
                                 <h5>Розмір:</h5>
                                 <div className="btn-group" role="group" aria-label="Size selection">
@@ -141,9 +142,17 @@ const ProductItemPage = () => {
                             </div>
                         )}
 
-                        <button className="btn btn-primary btn-lg mb-3 me-2">
-                            <i className="bi bi-cart-plus"></i> Додати в кошик
-                        </button>
+                        {isInCart ?
+                            (
+                                <div className="btn btn-success btn-lg mb-3 me-2 disabled">
+                                    <i className="bi bi-check-circle"></i> У кошику
+                                </div>
+                            )
+                            :(
+                                <button onClick={() => addToCart(cartItem)} className="btn btn-primary btn-lg mb-3 me-2">
+                                    <i className="bi bi-cart-plus"></i> Додати в кошик
+                                </button>
+                            )}
 
                         <button className="btn btn-outline-secondary btn-lg mb-3">
                             <i className="bi bi-heart"></i> У бажане

@@ -1,7 +1,12 @@
 import {BASE_URL} from "../../../api/apiConfig";
 import {Link} from "react-router-dom";
-
+import {ShoppingCartOutlined} from "@ant-design/icons";
+import {useCartLogic} from "../../../hooks/useCartLogic";
+import {Button} from "antd";
 const SimpleCard = ({product}) => {
+
+    const { cartItem, isInCart, addToCart } = useCartLogic(product, `${BASE_URL}/images/400_${product.productImages[0].name}`);
+
     return (
         <>
             <div key={product.id} className="col-md-6 col-lg-4">
@@ -19,7 +24,25 @@ const SimpleCard = ({product}) => {
                     />
                     <div className="card-body d-flex flex-column">
                         <div className="text-center mb-2">
-                            <h5 className="card-title mb-1">{product.name}</h5>
+
+                            <div className="mt-auto d-flex justify-content-between align-items-center">
+                                <h5 className="card-title mb-1">{product.name}</h5>
+                                {isInCart ?
+                                    (
+                                        <Button
+                                            icon={<ShoppingCartOutlined />}
+                                            disabled={true}
+                                        />
+                                    ) :(
+                                        <Button
+                                            icon={<ShoppingCartOutlined />}
+                                            className="btn btn-success"
+                                            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                                            onClick={() => addToCart(cartItem)}
+                                        />
+                                    )}
+                            </div>
+
                             <small className="text-muted">
                                 {product.productSize?.name} • {product.weight} г
                             </small>

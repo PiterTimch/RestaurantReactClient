@@ -1,6 +1,9 @@
 import { BASE_URL } from "../../../api/apiConfig";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import {useMemo, useState} from "react";
+import {useCartLogic} from "../../../hooks/useCartLogic";
+import {Button} from "antd";
+import {ShoppingCartOutlined} from "@ant-design/icons";
 
 const CardWithVariants = ({ product }) => {
     const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
@@ -11,6 +14,17 @@ const CardWithVariants = ({ product }) => {
         setSelectedVariant(variant);
     };
 
+    const selectedProduct = useMemo(() => ({
+        ...product,
+        id: selectedVariant.id,
+        price: selectedVariant.price
+    }), [product, selectedVariant]);
+
+    const image = useMemo(() => {
+        return `${BASE_URL}/images/400_${selectedVariant.productImages[0]?.name}`;
+    }, [selectedVariant]);
+
+    const { cartItem, isInCart, addToCart } = useCartLogic(selectedProduct, image);
     return (
         <div className="col-md-6 col-lg-4">
             <div className="card h-100 shadow-sm border-0">
@@ -25,7 +39,23 @@ const CardWithVariants = ({ product }) => {
 
                 <div className="card-body d-flex flex-column">
                     <div className="text-center mb-2">
-                        <h5 className="card-title mb-1">{product.name}</h5>
+                        <div className="mt-auto d-flex justify-content-between align-items-center">
+                            <h5 className="card-title mb-1">{product.name}</h5>
+                            {isInCart ?
+                                (
+                                    <Button
+                                        icon={<ShoppingCartOutlined />}
+                                        disabled={true}
+                                    />
+                                ) :(
+                                    <Button
+                                        icon={<ShoppingCartOutlined />}
+                                        className="btn btn-success"
+                                        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                                        onClick={() => addToCart(cartItem)}
+                                    />
+                                )}
+                        </div>
 
                         <select
                             className="form-select form-select-sm mb-2"
