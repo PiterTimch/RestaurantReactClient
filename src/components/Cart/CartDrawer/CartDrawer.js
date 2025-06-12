@@ -2,6 +2,7 @@ import { Badge, Drawer, Button, List, Typography, Image, Space, Divider } from "
 import { ShoppingCartOutlined, DeleteOutlined,  MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import {useState, useMemo, useEffect} from "react";
 import { useCartStore } from "../../../store/cartStore";
+import {BASE_URL} from "../../../api/apiConfig";
 
 const { Text, Title } = Typography;
 
@@ -42,10 +43,10 @@ const CartDrawer = () => {
                             ]}
                         >
                             <Space align="start">
-                                <Image src={item.image} width={64} height={64} preview={false} />
+                                <Image src={`${BASE_URL}/images/200_${item.imageName}`} width={64} height={64} preview={false} />
                                 <div>
                                     <Text strong>{item.name}</Text><br />
-                                    <Text type="secondary">{item.category}</Text><br />
+                                    <Text type="secondary">{item.categoryName}</Text><br />
 
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0" }}>
                                         <Button
@@ -62,7 +63,7 @@ const CartDrawer = () => {
                                             icon={<PlusOutlined />}
                                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                                         />
-                                    </div>s
+                                    </div>
 
                                     <Text>Ціна: {item.price} ₴</Text>
                                 </div>

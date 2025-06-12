@@ -8,7 +8,7 @@ export const useCartLogic = (product, mainImage, selectedVariant = null ) => {
     const [cartItem, setCartItem] = useState({});
 
     const isInCart = cartList.some(
-        item => item.id === (selectedVariant ? selectedVariant.id : product.id)
+        item => item.name === (selectedVariant ? selectedVariant.name : product.name) //доробити через ID
     );
 
     useEffect(() => {
@@ -17,9 +17,9 @@ export const useCartLogic = (product, mainImage, selectedVariant = null ) => {
         setCartItem({
             id: selectedVariant ? selectedVariant.id : product.id,
             name: product.name,
-            image: mainImage || (product.productImages?.length > 0 ? product.productImages[0].name : null),
+            imageName: mainImage || (product.productImages?.length > 0 ? product.productImages[0].name : null),
             quantity: 1,
-            category: product.category?.name,
+            categoryName: product.category?.name,
             price: selectedVariant ? selectedVariant.price : product.price
         });
     }, [product, selectedVariant, mainImage]);

@@ -5,7 +5,7 @@ import {useCartLogic} from "../../../hooks/useCartLogic";
 import {Button} from "antd";
 const SimpleCard = ({product}) => {
 
-    const { cartItem, isInCart, addToCart } = useCartLogic(product, `${BASE_URL}/images/400_${product.productImages[0].name}`);
+    const { cartItem, isInCart, addToCart } = useCartLogic(product, `${product.productImages[0].name}`);
 
     return (
         <>

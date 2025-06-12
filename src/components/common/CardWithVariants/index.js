@@ -21,7 +21,7 @@ const CardWithVariants = ({ product }) => {
     }), [product, selectedVariant]);
 
     const image = useMemo(() => {
-        return `${BASE_URL}/images/400_${selectedVariant.productImages[0]?.name}`;
+        return `${selectedVariant.productImages[0]?.name}`;
     }, [selectedVariant]);
 
     const { cartItem, isInCart, addToCart } = useCartLogic(selectedProduct, image);
