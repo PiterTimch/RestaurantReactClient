@@ -6,9 +6,8 @@ export const useAuthStore = create((set) => ({
     setUser: (user) => {
         set({ user })
 
-        const clearCart = useCartStore.getState().clearCart;
         const fetchCart = useCartStore.getState().fetchCart;
-        clearCart();
+
         fetchCart();
         localStorage.removeItem("cart-storage");
     },

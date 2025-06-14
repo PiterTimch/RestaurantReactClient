@@ -1,6 +1,6 @@
 import './index.css';
 import {useParams} from "react-router-dom";
-import {Fragment, useEffect, useState} from "react";
+import {Fragment, useEffect, useMemo, useState} from "react";
 import axiosInstance from "../../../api/axiosInstance";
 import {BASE_URL} from "../../../api/apiConfig";
 import LoadingOverlay from "../../../components/common/LoadingOverlay";
@@ -14,7 +14,25 @@ const ProductItemPage = () => {
 
     const [isLoading, setIsLoading] = useState(true);
 
-    const { cartItem, isInCart, addToCart } = useCartLogic(product, mainImage, selectedVariant);
+    const selectedProduct = useMemo(() => {
+        if (!selectedVariant) return product;
+
+        return {
+            ...product,
+            id: selectedVariant.id,
+            price: selectedVariant.price,
+            sizeName: selectedVariant.productSize?.name,
+        };
+    }, [product, selectedVariant]);
+
+
+    const image = useMemo(() => {
+        if (!selectedVariant) return product;
+
+        return `${selectedVariant.productImages[0]?.name}`;
+    }, [selectedVariant]);
+
+    const { cartItem, isInCart, addToCart } = useCartLogic(selectedProduct, image);
 
     useEffect(() => {
         const fetchProduct = async () => {

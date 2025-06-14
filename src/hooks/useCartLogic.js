@@ -1,31 +1,33 @@
 import { useEffect, useState } from "react";
 import {useCartStore} from "../store/cartStore";
 
-export const useCartLogic = (product, mainImage, selectedVariant = null ) => {
+export const useCartLogic = (product, mainImage) => {
     const cartList = useCartStore(state => state.cartList);
-    const addItem = useCartStore(state => state.addItem);
+    const createUpdateItem = useCartStore(state => state.createUpdateItem);
 
     const [cartItem, setCartItem] = useState({});
 
     const isInCart = cartList.some(
-        item => item.name === (selectedVariant ? selectedVariant.name : product.name) //доробити через ID
+        item => item.productId === product.id
     );
 
     useEffect(() => {
         if (!product || !product.id) return;
 
         setCartItem({
-            id: selectedVariant ? selectedVariant.id : product.id,
+            productId: product.id,
             name: product.name,
+            sizeName: product.sizeName,
             imageName: mainImage || (product.productImages?.length > 0 ? product.productImages[0].name : null),
             quantity: 1,
             categoryName: product.category?.name,
-            price: selectedVariant ? selectedVariant.price : product.price
+            price: product.price
         });
-    }, [product, selectedVariant, mainImage]);
+
+    }, [product, mainImage]);
 
     const addToCart = () => {
-        addItem(cartItem);
+        createUpdateItem(cartItem);
     };
 
     return { cartItem, isInCart, addToCart };

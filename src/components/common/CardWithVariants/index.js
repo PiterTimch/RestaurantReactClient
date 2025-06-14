@@ -17,7 +17,8 @@ const CardWithVariants = ({ product }) => {
     const selectedProduct = useMemo(() => ({
         ...product,
         id: selectedVariant.id,
-        price: selectedVariant.price
+        price: selectedVariant.price,
+        sizeName: selectedVariant.productSize.name,
     }), [product, selectedVariant]);
 
     const image = useMemo(() => {

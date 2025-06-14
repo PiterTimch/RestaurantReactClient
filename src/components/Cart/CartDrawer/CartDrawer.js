@@ -3,13 +3,16 @@ import { ShoppingCartOutlined, DeleteOutlined,  MinusOutlined, PlusOutlined } fr
 import {useState, useMemo, useEffect} from "react";
 import { useCartStore } from "../../../store/cartStore";
 import {BASE_URL} from "../../../api/apiConfig";
+import {useAuthStore} from "../../../store/authStore";
 
 const { Text, Title } = Typography;
 
 const CartDrawer = () => {
     const cartList = useCartStore((state) => state.cartList);
-    const {removeItem, updateQuantity} = useCartStore((state) => state); // Додай цю функцію в store
+    const {removeItem, createUpdateItem} = useCartStore((state) => state); // Додай цю функцію в store
     const [open, setOpen] = useState(false);
+
+    const user = useAuthStore(state => state.user);
 
     const totalPrice = useMemo(() =>
         cartList.reduce((sum, item) => sum + item.price * item.quantity, 0), [cartList]
@@ -38,14 +41,14 @@ const CartDrawer = () => {
                                 <Button
                                     danger
                                     icon={<DeleteOutlined />}
-                                    onClick={() => removeItem(item.id)}
+                                    onClick={() => removeItem(user ? item.id : item.productId)}
                                 />
                             ]}
                         >
                             <Space align="start">
                                 <Image src={`${BASE_URL}/images/200_${item.imageName}`} width={64} height={64} preview={false} />
                                 <div>
-                                    <Text strong>{item.name}</Text><br />
+                                    <Text strong>{item.name}({item.sizeName})</Text><br />
                                     <Text type="secondary">{item.categoryName}</Text><br />
 
                                     <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "8px 0" }}>
@@ -54,14 +57,14 @@ const CartDrawer = () => {
                                             icon={<MinusOutlined />}
                                             onClick={() =>
                                                 item.quantity > 1 &&
-                                                updateQuantity(item.id, item.quantity - 1)
+                                                createUpdateItem({...item, quantity: item.quantity - 1})
                                             }
                                         />
                                         <Text>{item.quantity}</Text>
                                         <Button
                                             size="small"
                                             icon={<PlusOutlined />}
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                            onClick={() => createUpdateItem({...item, quantity: item.quantity + 1})}
                                         />
                                     </div>
 

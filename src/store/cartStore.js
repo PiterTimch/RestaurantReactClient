@@ -1,46 +1,3 @@
-// import { create } from 'zustand';
-// import { persist } from 'zustand/middleware';
-//
-// export const useCartStore = create(
-//     persist(
-//         (set, get) => ({
-//             cartList: [],
-//
-//             addItem: (item) => {
-//                 const existing = get().cartList.find(i => i.id === item.id);
-//
-//                 if (existing) {
-//                     set({
-//                         cartList: get().cartList.map(i =>
-//                             i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
-//                         ),
-//                     });
-//                 } else {
-//                     set({ cartList: [...get().cartList, item] });
-//                 }
-//             },
-//
-//             removeItem: (id) => {
-//                 set({
-//                     cartList: get().cartList.filter(i => i.id !== id),
-//                 });
-//             },
-//
-//             updateQuantity: (id, newQuantity) => {
-//                 set({
-//                     cartList: get().cartList.map((item) =>
-//                         item.id === id ? { ...item, quantity: newQuantity } : item
-//                     ),
-//                 });
-//             }
-//         }),
-//         {
-//             name: 'cart-storage', // ключ у localStorage
-//         }
-//     )
-// );
-
-
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import {useAuthStore} from "./authStore";
@@ -50,30 +7,26 @@ export const useCartStore = create(
     persist(
         (set, get) => ({
             cartList: [],
-            setCartList: (cart) => set({ cartList: cart }),
 
-            addItem: async (item) => {
+            createUpdateItem: async (item) => {
                 const user = useAuthStore.getState().user;
 
                 if (user) {
-                    await axiosInstance.post('/api/cart/addCartItem', {
-                        userId: user.id,
-                        productId: item.id,
+                    await axiosInstance.post('/api/cart/createUpdate', {
+                        productId: item.productId,
+                        quantity: item.quantity
                     });
 
-                    const res = await axiosInstance.get(`/api/cart/getCart`, {
-                        params: { userId: user.id }
-                    });
+                    const res = await axiosInstance.get(`/api/cart/getCart`);
                     set({ cartList: res.data.items });
 
-                    console.log(res.data);
-
                 } else {
-                    const existing = get().cartList.find(i => i.id === item.id);
+
+                    const existing = get().cartList.find(i => i.productId === item.productId);
                     if (existing) {
                         set({
                             cartList: get().cartList.map(i =>
-                                i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+                                i.productId === item.productId ? { ...i, quantity: item.quantity } : i
                             ),
                         });
                     } else {
@@ -87,34 +40,11 @@ export const useCartStore = create(
 
                 if (user) {
                     await axiosInstance.put(`/api/cart/removeCartItem/${id}`);
-                    const res = await axiosInstance.get(`/api/cart/getCart`, {
-                        params: { userId: user.id }
-                    });
+                    const res = await axiosInstance.get(`/api/cart/getCart`);
                     set({ cartList: res.data.items });
                 } else {
                     set({
-                        cartList: get().cartList.filter(i => i.id !== id),
-                    });
-                }
-            },
-
-            updateQuantity: async (id, newQuantity) => {
-                const user = useAuthStore.getState().user;
-
-                if (user) {
-                    await axiosInstance.put('/api/cart/updateCartItemQuantity', {
-                        cartItemId: id,
-                        newQuantity,
-                    });
-                    const res = await axiosInstance.get(`/api/cart/getCart`, {
-                        params: { userId: user.id }
-                    });
-                    set({ cartList: res.data.items });
-                } else {
-                    set({
-                        cartList: get().cartList.map((item) =>
-                            item.id === id ? { ...item, quantity: newQuantity } : item
-                        ),
+                        cartList: get().cartList.filter(i => i.productId !== id),
                     });
                 }
             },
@@ -127,9 +57,19 @@ export const useCartStore = create(
                 const user = useAuthStore.getState().user;
                 if (!user) return;
 
-                const res = await axiosInstance.get(`/api/cart/getCart`, {
-                    params: { userId: user.id }
-                });
+                const localItems = get().cartList;
+
+                // Якщо є локальні товари — додаємо їх у БД
+                if (localItems.length > 0) {
+                    await Promise.all(localItems.map(item =>
+                        axiosInstance.post('/api/cart/createUpdate', {
+                            productId: item.productId,
+                            quantity: item.quantity,
+                        })
+                    ));
+                }
+
+                const res = await axiosInstance.get(`/api/cart/getCart`);
                 set({ cartList: res.data.items });
             }
         }),
