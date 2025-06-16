@@ -11,7 +11,9 @@ const Layout = () => {
 
     const handleLogout = () => {
         logout();
-        navigate("/");
+        setTimeout(() => {
+            navigate("/");
+        }, 0);
     }
 
     return (
@@ -34,13 +36,15 @@ const Layout = () => {
 
                                 {user ? (
                                     <div className="d-flex align-items-center">
-                                        <img
-                                            src={`${BASE_URL}/images/50_${user.image}`}
-                                            alt="Avatar"
-                                            className="rounded-circle mx-3"
-                                        />
-                                        <span className="mx-3">{user.email}</span>
-                                        <button className="mx-3 btn btn-light" onClick={handleLogout}>Вийти</button>
+                                        <Link to={"profile/"} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            <img
+                                                src={`${BASE_URL}/images/50_${user.image}`}
+                                                alt="Avatar"
+                                                className="rounded-circle ms-3"
+                                            />
+                                            <span className="mx-3">{user.email}</span>
+                                            <button className="mx-3 btn btn-light" onClick={handleLogout}>Вийти</button>
+                                        </Link>
                                     </div>
                                 ) : (
                                     <>

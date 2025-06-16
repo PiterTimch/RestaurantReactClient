@@ -3,12 +3,12 @@ import {useCartStore} from "./cartStore";
 
 export const useAuthStore = create((set) => ({
     user: null,
-    setUser: (user) => {
-        set({ user })
+    setUser: async (user) => {
+        set({user})
 
         const fetchCart = useCartStore.getState().fetchCart;
 
-        fetchCart();
+        await fetchCart();
         localStorage.removeItem("cart-storage");
     },
     logout: () => {

@@ -15,18 +15,19 @@ import ProductItemPage from "./pages/products/Item";
 import ProductsListPage from "./pages/products/List";
 import ProductCreatePage from "./pages/products/Create";
 import EditProductPage from "./pages/products/Edit";
+import ProfilePage from "./pages/profile";
+import OrderListPage from "./pages/profile/OrderList";
 
 const App = () => {
     const setUser = useAuthStore((state) => state.setUser);
 
-    useEffect(() => {
+    const checkAuth = async () => {
         const token = localStorage.getItem("jwt");
         if (token) {
             try {
                 const decoded = jwtDecode(token);
-
                 if (decoded.exp * 1000 > Date.now()) {
-                    setUser(decoded);
+                    await setUser(decoded);
                 } else {
                     localStorage.removeItem("jwt");
                 }
@@ -35,6 +36,10 @@ const App = () => {
                 localStorage.removeItem("jwt");
             }
         }
+    }
+
+    useEffect(() => {
+        checkAuth()
     }, []);
 
     return (
@@ -58,6 +63,11 @@ const App = () => {
 
                     <Route path={"account"}>
                         <Route path={"login"} element={<LoginAccountForm/>}/>
+                    </Route>
+
+                    <Route path={"profile"}>
+                        <Route index element={<ProfilePage/>}></Route>
+                        <Route path={"orders"} element={<OrderListPage/>}></Route>
                     </Route>
 
                     <Route path="*" element={<NoMatch />} />
