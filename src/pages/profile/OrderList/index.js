@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { Collapse } from "antd";
+import {Button, Collapse} from "antd";
 import axiosInstance from "../../../api/axiosInstance";
 import { BASE_URL } from "../../../api/apiConfig";
+import { EyeOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
 
 const { Panel } = Collapse;
 
@@ -14,14 +16,6 @@ const OrderListPage = () => {
             .then(res => setOrders(res.data))
             .catch(err => console.log(err));
     }, []);
-
-    const toggleCollapse = (key) => {
-        if (activeKeys.includes(key)) {
-            setActiveKeys(activeKeys.filter(k => k !== key));
-        } else {
-            setActiveKeys([...activeKeys, key]);
-        }
-    };
 
     return (
         <div className="container py-5" style={{ fontSize: "18px", lineHeight: 1.6 }}>
@@ -66,7 +60,12 @@ const OrderListPage = () => {
                                             />
                                         )}
                                         <div className="flex-grow-1">
-                                            <strong>{item.productName}</strong>
+                                            <div className={"d-flex justify-content-start"}>
+                                                <strong>{item.productName}</strong>
+                                                <Link to={`/products/list/${item.productSlug}`}>
+                                                    <Button className="m-0 ms-3" icon={<EyeOutlined />} />
+                                                </Link>
+                                            </div>
                                             <div className="text-muted small" style={{ fontSize: "16px" }}>
                                                 Кількість: {item.count} × {item.priceBuy} грн
                                             </div>
